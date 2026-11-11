@@ -1,0 +1,124 @@
+{
+  "generator": "插件/tools/vendor.mjs",
+  "generatedAt": "2026-11-03T04:15:21.673Z",
+  "sourceRoot": "/home/ubuntu/dsh-agentchat/surfcore",
+  "roots": [
+    "plugins/surfcore/lib/pet.js",
+    "plugins/surfcore/lib/pet-chat.js",
+    "plugins/surfcore/lib/pet-purpose.js",
+    "plugins/surfcore/lib/pet-api.js",
+    "plugins/surfcore/lib/memory-card.js",
+    "plugins/surfcore/lib/persona.js",
+    "plugins/surfcore/lib/store.js",
+    "plugins/surfcore/lib/paths.js",
+    "plugins/surfcore/lib/http-guard.js"
+  ],
+  "copyDirs": [],
+  "files": [
+    {
+      "rel": "plugins/surfcore/lib/http-guard.js",
+      "bytes": 5736,
+      "sha256": "83d2acbd47a429bc91ce13746d33a61a1b64e22ffa1791e5751a1e073d984d61"
+    },
+    {
+      "rel": "plugins/surfcore/lib/memory-card.js",
+      "bytes": 21742,
+      "sha256": "bb8089d6635c54a810290fa6cb093177f946d9a93f35591b168da324a8624e74"
+    },
+    {
+      "rel": "plugins/surfcore/lib/paths.js",
+      "bytes": 6295,
+      "sha256": "cdbf74c9ecb8265b97741051c89bc1330c7d42281a652a07480d481795d1ea7d"
+    },
+    {
+      "rel": "plugins/surfcore/lib/persona.js",
+      "bytes": 1896,
+      "sha256": "a48ef4b5bea5b77ac7babd293d321190b9651c8de0b1d51467c34daeea19a8dc"
+    },
+    {
+      "rel": "plugins/surfcore/lib/pet-api.js",
+      "bytes": 9343,
+      "sha256": "1c3ef6ab8331d3ed3774af9c118ec73d1b6cfe9d6982f5fdfa85969909a84379"
+    },
+    {
+      "rel": "plugins/surfcore/lib/pet-chat.js",
+      "bytes": 36178,
+      "sha256": "b1a820567632336accdd7ed17b912e213cf27d8008467bcaa9ceed3b313061fc"
+    },
+    {
+      "rel": "plugins/surfcore/lib/pet-purpose.js",
+      "bytes": 25429,
+      "sha256": "7503875ff3e573b5c2c55783e354c6175cd1e5393083bc67f233a808322b2630"
+    },
+    {
+      "rel": "plugins/surfcore/lib/pet.js",
+      "bytes": 34763,
+      "sha256": "3f220af99079ff041cfc1e21e7c2f07f64a2bb1120848546aab895df4961f2d8"
+    },
+    {
+      "rel": "plugins/surfcore/lib/store.js",
+      "bytes": 26982,
+      "sha256": "f476f5ef633384fee50cc53a1bc66ce2cb2558687cc73840f7d9e9a37f0c5e05"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/config.mjs",
+      "bytes": 5277,
+      "sha256": "06d33d5b7b51000a4ee628662c2acff01a2eb44a90ce0238df9db0cb06bc1045"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/fish-guard.mjs",
+      "bytes": 31796,
+      "sha256": "7f19513e33987606add2bf309fb295908990cefefc50ec97fe8559d248ba20e4"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/kinds.mjs",
+      "bytes": 6522,
+      "sha256": "c5a9ce58cbdc5a54c4509d6e06dc82814d84fd5357d80c8d7cee749419856fb4"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/limits.mjs",
+      "bytes": 2568,
+      "sha256": "c093550262cfff674fedddb77b6a3a7a99c311ca59a2e9404acbbe922280e70e"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/state-paths.mjs",
+      "bytes": 2428,
+      "sha256": "3537a00f68486e68295269123e22a0852e9aa7c79c57a2b10b84772adecb4b97"
+    },
+    {
+      "rel": "src/admin-identity.js",
+      "bytes": 12866,
+      "sha256": "8b9f7bba388db449dff1a6a2322ca2ecc6cbf247cc98d6c1a5034f3cd4acb70f"
+    },
+    {
+      "rel": "src/character-persona.js",
+      "bytes": 27107,
+      "sha256": "aedfc943807f8d355a87ff2e3f8ffc72ddddb77bfac2f48e21d4ccc7e8eb6f32"
+    },
+    {
+      "rel": "src/fish-guard.js",
+      "bytes": 13233,
+      "sha256": "07523b5dfd17640b49e39d2b3c591c7364fe1a70a25e939fe7951c3144573d75"
+    },
+    {
+      "rel": "src/memory-card.js",
+      "bytes": 90315,
+      "sha256": "6f1d5d1239f78f4615353481da03daceae633f33cef7e342332bdcbc53a464e2"
+    },
+    {
+      "rel": "src/purpose-engine.js",
+      "bytes": 106904,
+      "sha256": "0b2f4554949671aa8bd787639856a83e161cf7fb6316e588b5c781f047c6dcf8"
+    },
+    {
+      "rel": "src/share-mode.js",
+      "bytes": 1853,
+      "sha256": "70bf32a8d8d1423dd3e9386df34d8d787f89307fb9af89dcf7d086c94c67dd72"
+    },
+    {
+      "rel": "src/voice-tts.js",
+      "bytes": 5385,
+      "sha256": "cbecd6777648dea9f2364bd8b0398b200ff3e864313a0e1bdf68445033fc6b34"
+    }
+  ]
+}

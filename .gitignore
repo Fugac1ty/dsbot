@@ -1,0 +1,49 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 独立仓库（aurabot-qq 是另一个项目，有自己的 GitHub 仓库）
+/aurabot-qq/
+
+# 本地运行时/测试产物
+.tmp/
+.cx-proxy-test/
+output/
+verify/.dsh-home/
+.install-test/
+*.tmp-*
+*.log
+*.jsonl
+
+# 数据文件（含记忆/配置/账号，绝不公开）
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.tar.gz
+*.tgz
+*.gz
+*.bak
+
+# 备份与迁移快照（含个人记忆、日志、凭据）
+.migration/
+migration-backup-*/
+backup-profile/
+.dsh-home/
+dsh-home-*/
+
+# 打包产物
+candidates/*.tgz
+
+# 密钥
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+*.p12
+auth.json
+
+# 系统垃圾
+.DS_Store
+Thumbs.db

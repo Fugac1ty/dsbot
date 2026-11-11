@@ -1,0 +1,10 @@
+# dsh-codex-media bundle patch.
+#
+# One root-level tool plugin: it injects `tools` and registers the global
+# `codex_imagegen` and `codex_vision` tools, exactly like an MCP client
+# registers its server tools.
+# The entry name and id match the package name so the plugin manager and the
+# Plugins page can address the row.
+- insert:
+    - id: dsh-codex-media
+      name: dsh-codex-media

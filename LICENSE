@@ -1,0 +1,37 @@
+MIT License
+
+Copyright (c) 2026 Derpyu520 and qq-bridge / QSH contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 来源说明
+
+本仓库的 8 个 `surfcore-*` 插件由 SurfCore（MIT）拆出，`lib/vendor/` 下的文件是原代码的
+原样副本，来源与哈希记录在各包的 `lib/vendor/MANIFEST.json`。
+
+## 第三方组件与合规边界
+
+- **SnowLuma2** 是第三方专有运行时，不随本仓库分发、不打包、不代你同意协议（EULA §5.4）；
+  本项目只做「检测已安装 / 启动窗口 / 连接状态」。
+- QQ、B站 等平台的账号、Cookie、凭据由使用者自行提供并自行遵守其服务条款；
+  本项目不提供绕过平台风控的能力。
+- 本仓库**不含任何真实数据**：角色卡为脱敏示例，记忆卡为空壳，群号 / QQ 号 / mid 全为占位符。
+  运行时数据只存在于使用者自己的机器上。

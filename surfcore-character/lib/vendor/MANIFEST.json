@@ -1,0 +1,108 @@
+{
+  "generator": "插件/tools/vendor.mjs",
+  "generatedAt": "2026-11-03T04:23:34.415Z",
+  "sourceRoot": "/home/ubuntu/dsh-agentchat/surfcore",
+  "roots": [
+    "plugins/surfcore/lib/characters.js",
+    "plugins/surfcore/lib/persona.js",
+    "plugins/surfcore/lib/privacy.js",
+    "plugins/surfcore/lib/store.js",
+    "plugins/surfcore/lib/paths.js",
+    "plugins/surfcore/lib/http-guard.js",
+    "src/role-card.js",
+    "src/self-identity.js"
+  ],
+  "copyDirs": [],
+  "files": [
+    {
+      "rel": "plugins/surfcore/lib/characters.js",
+      "bytes": 7311,
+      "sha256": "25f0d20a51c92201bfe828d455268dc2e8228193726c27305a8bf9e7f1adde9b"
+    },
+    {
+      "rel": "plugins/surfcore/lib/http-guard.js",
+      "bytes": 5736,
+      "sha256": "83d2acbd47a429bc91ce13746d33a61a1b64e22ffa1791e5751a1e073d984d61"
+    },
+    {
+      "rel": "plugins/surfcore/lib/paths.js",
+      "bytes": 6295,
+      "sha256": "cdbf74c9ecb8265b97741051c89bc1330c7d42281a652a07480d481795d1ea7d"
+    },
+    {
+      "rel": "plugins/surfcore/lib/persona.js",
+      "bytes": 1896,
+      "sha256": "a48ef4b5bea5b77ac7babd293d321190b9651c8de0b1d51467c34daeea19a8dc"
+    },
+    {
+      "rel": "plugins/surfcore/lib/privacy.js",
+      "bytes": 9898,
+      "sha256": "4d982476df0b104e4ef9884f1bcae121795dcf4bdca7a288788ed0ee16c880d8"
+    },
+    {
+      "rel": "plugins/surfcore/lib/store.js",
+      "bytes": 26982,
+      "sha256": "f476f5ef633384fee50cc53a1bc66ce2cb2558687cc73840f7d9e9a37f0c5e05"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/config.mjs",
+      "bytes": 5277,
+      "sha256": "06d33d5b7b51000a4ee628662c2acff01a2eb44a90ce0238df9db0cb06bc1045"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/fish-guard.mjs",
+      "bytes": 31796,
+      "sha256": "7f19513e33987606add2bf309fb295908990cefefc50ec97fe8559d248ba20e4"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/kinds.mjs",
+      "bytes": 6522,
+      "sha256": "c5a9ce58cbdc5a54c4509d6e06dc82814d84fd5357d80c8d7cee749419856fb4"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/limits.mjs",
+      "bytes": 2568,
+      "sha256": "c093550262cfff674fedddb77b6a3a7a99c311ca59a2e9404acbbe922280e70e"
+    },
+    {
+      "rel": "plugins/surfcore/tools/lib/state-paths.mjs",
+      "bytes": 2428,
+      "sha256": "3537a00f68486e68295269123e22a0852e9aa7c79c57a2b10b84772adecb4b97"
+    },
+    {
+      "rel": "src/admin-identity.js",
+      "bytes": 12866,
+      "sha256": "8b9f7bba388db449dff1a6a2322ca2ecc6cbf247cc98d6c1a5034f3cd4acb70f"
+    },
+    {
+      "rel": "src/character-persona.js",
+      "bytes": 27107,
+      "sha256": "aedfc943807f8d355a87ff2e3f8ffc72ddddb77bfac2f48e21d4ccc7e8eb6f32"
+    },
+    {
+      "rel": "src/fish-guard.js",
+      "bytes": 13233,
+      "sha256": "07523b5dfd17640b49e39d2b3c591c7364fe1a70a25e939fe7951c3144573d75"
+    },
+    {
+      "rel": "src/memory-card.js",
+      "bytes": 90315,
+      "sha256": "6f1d5d1239f78f4615353481da03daceae633f33cef7e342332bdcbc53a464e2"
+    },
+    {
+      "rel": "src/role-card.js",
+      "bytes": 4247,
+      "sha256": "cc24ccd4a6fcc8326ff5138f0f0e1df76e20fffc8dbec545f122da49afd38627"
+    },
+    {
+      "rel": "src/self-identity.js",
+      "bytes": 9877,
+      "sha256": "dce862bb19c5e983cfc61af34262d9f18eba2d53e3f3f2253f057879cb2172b8"
+    },
+    {
+      "rel": "src/share-mode.js",
+      "bytes": 1853,
+      "sha256": "70bf32a8d8d1423dd3e9386df34d8d787f89307fb9af89dcf7d086c94c67dd72"
+    }
+  ]
+}

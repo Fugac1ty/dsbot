@@ -1,0 +1,558 @@
+# dsh-cost-balance-indicator
+
+**DSH Web 的花费 / 余额 / 时段指示器**：会话头部一处显示「本会话花费 · Key 余额」，右侧单列当前峰谷时段；
+每轮末尾显示本轮 token 费用与余额；四枚胶囊的文字色、边框色、背景色都能按喜好自定义，并带深色 / 浅白预设
+（**没有「默认」预设：不动就是浅白**）。
+
+## 简介
+
+- **它做什么**：把 DeepSeek API 的**消费**（本会话累计、本轮单轮）与 **Key 余额**放在你每天都会看的位置，
+  顺带标出当前是**高峰**还是**闲时**（含到下次切换的倒计时），让你在花钱和余额之间不用来回切页面。
+- **数据从哪来**：
+  - 花费：重放会话日志里的真实 token 用量，按**每条用量事件自身时间戳**所处的峰谷价计价（含缓存命中价）；
+  - 余额：官方 `GET /user/balance`，由**主机侧**携带密钥调用（`config.apiKey` → 环境变量 → `ctx.credentials` 凭证库），
+    **密钥不会进入浏览器**；主机侧缓存 20s、并发去重、失败时回退上一次成功值；
+  - 价格表：DeepSeek 官方价格页（人民币 / 百万 tokens），见 `lib/index.js` 的 `MODEL_PRICES`；
+  - 时段规则：北京时间工作日 09:00–12:00、14:00–18:00 为高峰，其余与周末全天为闲时（闲时为高峰半价）。
+- **额外能力**：可选的自动压缩成本护栏（默认开启，长会话达到 token 预算即折叠旧上下文）；
+  悬停任一胶囊 0.5 秒弹出**配色覆盖栏**（RGB 轮盘 + 明度/RGB 滑块，整体或单个调色，两档预设，自动保存；
+  时段胶囊与本轮费用胶囊的覆盖栏最底部还有一行**当前时段官方单价**）。
+- **环境要求**：DSH `>= 0.1.0-rc.7` 的 `web` profile、Node `>= 22.13.0`。
+- **安装**：见 [安装](#安装)；一分钟内可 `pwsh -File install.ps1` 装好，`-Uninstall` 可完整回退。
+- **授权与归属**：MIT。本包**包含** [`dsh-peak-indicator`](https://github.com/future007s/dsh-peak-indicator)
+  0.1.26（MIT，© 2026 Jim）的代码，并保留其版权声明；完整说明见 [NOTICE](NOTICE)。
+- **免责**：本项目与 DeepSeek、与上游作者均无隶属或背书关系；价格表可能随官方调价而过期，
+  余额与费用均为**估算参考**，不构成账单依据。
+
+## 优化项目表（相对原插件）
+
+| # | 项目 | 原 `dsh-peak-indicator` | 本插件 |
+| --- | --- | --- | --- |
+| 1 | 分发形态 | 峰谷/费用与余额是两个独立包、两行插件 | **合并为一个包、一行插件**，杜绝同一个 `peakCost` 投影被注册两次 |
+| 2 | 头部信息架构 | 峰谷 + 本会话费用挤在同一枚徽标里 | 「**本会话花费 · 余额**」合并为一枚；**时段状态单列**一枚置于其右侧 |
+| 3 | 余额显示 | 无 | 官方 `user/balance` 余额，单位与价格片一致（¥、两位小数） |
+| 4 | 余额读取 | — | 主机侧 20s 缓存、并发去重、失败回退上次成功值并标注、`?force=1` 强制刷新 |
+| 5 | 配色 | 固定绿 / 红 | 四枚胶囊的**文字色 / 边框色 / 背景色**均可自定义（RGB 轮盘 + 明度 + R/G/B 滑块） |
+| 6 | 调色范围 | — | **整体**（四枚一起）或**单个**（只改当前这枚），带滑块动画的切换 |
+| 7 | 预设 | — | **深色**（`#F9FAFB` / `#353638` / `#2C2C2E`）/ **浅白**（`#0F1115` / `#E1E5EE` / `#F5F6F7`），取自桌面端深浅主题；**没有「默认」预设——内置配色就是浅白** |
+| 8 | 悬停交互 | 悬停立即弹出 | **0.5 秒悬停意图**才弹出，离开 240ms 收起，扫过时不再打断阅读 |
+| 9 | 覆盖栏主题 | 固定深色 rgba | 全部取自主题变量 `--dsw-alias-*`，**跟随当前皮肤**（含第三方主题） |
+| 10 | 保存 / 持久化 | 设置卡写入口用了客户端不存在的 API，改动实际不生效 | 自动保存 + **显式「保存」按钮** + 状态如实回报；主机设置为权威、浏览器副本兜底 |
+| 11 | 自动压缩设置卡 | 同上，写入口失效 | 写入口修正为 `set(field, value)`，卡片真正可用 |
+| 12 | 兼容性修复 | — | `settingsNamespace` 垫片（core 0.1.2+ 不再导出）；皮肤 `corner-shape: superellipse` 下强制轮盘正圆；`background` 简写会重置 `background-clip`；写设置为 `set/mutate` 而非 `write` |
+| 13 | 安装 / 换装 | 手动编辑 patch 文件 | `install.ps1`：复制 → 挂载 → 退役旧行，**两段式**写入避开热重载竞态；`-Uninstall` 回退 |
+| 14 | 自检与可视化 | — | `verify/self-check.ps1`（19 项，含冷启动）、`shot.mjs`（真浏览器截图/悬停）、`boot-graph.mjs`（启动图核对） |
+| 15 | 测试 | 无 | **54 项**（主机 18 + 浏览器 36），含一次真实余额读取 |
+| 16 | 桌面端（Electron） | 不支持：应用私有 profile 与 CLI 的 `web` 是两套组合 | `install.ps1 -Profile desktop` 一键装进应用私有 profile；自检第 6 节用同组合探针实例验证；桌面端已实测四枚胶囊与余额读取 |
+| 17 | 新内核兼容 | 4 个服务全是硬依赖，缺一个就卡在 `pending`；slot 注册一处失败即整半部失效 | 只有 `sessionProjections` 是硬依赖，其余走 `ctx.inject` 子纤程按需挂载；六个 slot 逐个独立注册 |
+
+## 桌面端（DSH Desktop / Electron）
+
+桌面端用的是**应用私有 profile** `desktop`，与 CLI 的 `web` profile 是两套组合，插件要分别装。
+
+**方式一：应用自带的「插件」页**（推荐，装完即被管理器接管，含升级）
+
+输入框接受**三种**写法（应用自带引导原文：`插件包名即 npm 包名（如 dsh-xxx 或 @作者/插件名）`）：
+
+| 写法 | 例子 | 说明 |
+| --- | --- | --- |
+| 包名 | `dsh-cost-balance-indicator` | 走 npm；本包已发布，可直接填 |
+| GitHub 地址 | `https://github.com/yimengqingfeng3-debug/dsh-cost-balance-indicator` | 仓库已提交构建产物 `lib/`，**无需构建步骤**，实测 `npm install <该地址>` 直接成功 |
+| 本地目录 | `<本包所在目录>` | 最快，但绑死该目录 |
+
+> ⚠️ **两种挂载方式只能留一种**：手工补丁行（`install.ps1`）与插件管理器的
+> `dsh.profile.bundles` 条目都会挂载同一个 loader id，**同时存在会让应用启动失败**（重复条目）。
+> 从手工方式换到管理器方式时，先撤掉手工那套：
+> ```powershell
+> pwsh -File install.ps1 -Profile desktop -Uninstall   # 移除补丁行与 node_modules 副本（patch 有备份）
+> ```
+> 自检第 6 节会检查「补丁行 / bundles 条目」**二选一**，同时存在即 FAIL。
+
+**方式二：安装脚本**
+
+```powershell
+pwsh -File install.ps1 -Profile desktop      # 装进桌面端
+pwsh -File verify/self-check.ps1             # 第 6 节会检查桌面端
+```
+
+- **为什么不能替它启动**：`dsh --profile desktop` 会被拒绝
+  （`profile "desktop" is managed exclusively by the Electron application`）——它由应用自己组合。
+- **首次安装要重启一次应用**：应用在**启动时**组合 profile，正在运行的实例不会看到新行
+  （自检如实报 `[WAIT] desktop app live mount`，不算失败）。安装脚本会同时把
+  `dsh.profile.patchReload` 设为 `live`，所以**此后的修改（含以后升级插件）无需再重启**。
+- **配色在桌面端怎么落盘**：桌面端**捆绑的客户端与 CLI 不是同一套 API**——它没有
+  `settingsScope` 绑定器，而是提供 `settingsSchema`，并让设置界面直接调用
+  `ctx.remote.settings.describe() / mutate(ns, ops, expectedRevision)`。
+  本插件的 `bindColorScope` 因此先找绑定器（CLI/网页版路径），找不到就退化到
+  **基于 `remote.settings` 的适配器**：读回本命名空间（含 `revision`）、用 `mutate` 写回 `pillColors`，
+  被拒时把原因显示在覆盖栏，`settings/conflict` 会重读后重试一次。
+  若两者都没有，才退回「只存浏览器本地」并如实提示。
+- **不确定对方内核提供什么？别猜**：`node verify/client-api.mjs --port 19387`
+  会读出**正在运行**的客户端到底有什么（服务表、`provide` 名称、`remote.*` 命名空间）。
+  `--grep settings` 还能打印关键词上下文。CLI 与桌面端内核不同，这个工具就是为此准备的。
+- **⚠️ 第二个"硬依赖"陷阱：模块级依赖**（0.7.3 的真实故障）。`package.json` 的
+  `dsh.client.inject` 声明的是**客户端模块**（不是服务）：加载器必须先把这些模块 id 解析出来，
+  才会激活本插件。上游留下的清单里有 `@deepseek-ai/dsh-client-ui-slots` —— **任何核心里都没有这个模块**。
+  CLI 的加载器忽略悬空依赖，桌面端的加载器**一直等它**，于是浏览器半部永不激活：
+  **一枚胶囊都不出现，而且没有任何报错弹窗**。现在两个 inject 列表都是 `[]`，
+  包内改用 `ctx.inject(["slots"], …)` 等待**服务**（服务等待跨内核可移植，模块 id 不是）。
+  想自查正在运行的实例：`node verify/boot-entry.mjs --port 19387`，
+  它会打印本插件自己的启动图条目，并把缺失的依赖标成 `*** MISSING from graph ***`。
+- **⚠️ 更新/安装时先退出应用，或准备好立刻重启**：管理器是往**正在运行**的应用里装的，而
+  `dsh.profile.patchReload: live` 会让应用**立刻**重组合并去 import 新包；这一刻文件还没写完的话，
+  就会报 `dsh-cost-balance-indicator: import failed`，应用**中止启动**并弹「应用无法启动或已意外停止」。
+  **包本身没问题**（自检会给它判 `[WAIT] … 重启应用`，而不是 FAIL）——重启一次即可。
+  想彻底避开这个赛跑：更新前先退出应用，或更新完立刻重启。
+- **⚠️ 别让这一行被禁用**：应用启动失败时会提供「禁用第三方插件」按钮，它会往 profile patch 写入
+  `- id: cost-balance-indicator` + `disabled: true`。被禁用的行**不会**参与组合——没有路由、没有客户端模块、
+  也没有任何报错，表现就是"启用了却什么都不出现"。自检的 `desktop patch: plugin not disabled` 专门盯这个。
+- **自检怎么验证它**：`self-check.ps1` 第 6 节把 `desktop` profile 复制成 `desktop-probe`
+  （保留同一份 `dsh.profile.bundles`：`dsh-base` + `dsh-web-app` + 本插件行），用 CLI 在空闲端口起探针实例，
+  校验余额路由、启动图与客户端包（6 个组件），跑完拆掉并还原 `storages`；最后访问**正在运行的应用**自己的端口，
+  确认它是否已伺服本插件包（200 = 已挂载）。
+- **想看真实渲染**：`pwsh -File verify/desktop-shot.ps1` 把同一份探针组合开进无头 Edge，
+  打开一个已有会话并截图头部四枚胶囊（跑完自动收摊、还原 `storages`）。
+- **桌面端实测**（应用 0.2.0-rc.2）：头部渲染 `本会话 ¥0.31 · 余额 ¥19.04` 与
+  `💤 闲时 · 1 小时 4 分钟 后切换`（时段胶囊自 0.8.2 起**不带单价**，单价在它的覆盖栏最底部），
+  轮末 `本轮 ¥0.31` / `余额 ¥19.04`，余额经应用同一条主机路由读取成功。
+- **为桌面端/新内核做的健壮性改动**（web 端行为不变）：**两半都不声明任何必需服务**
+  （`inject = []`）——`peakCost` 投影、设置段、自动压缩、余额路由、两套字典与四个 slot
+  全部由 `ctx.inject` 子纤程按需挂载，子纤程等待时**不会**把条目标记为 pending；
+  某个 slot 在新客户端里不存在时只损失那一处界面。
+- **⚠️ 为什么"必需服务"是禁区（0.7.0 的真实故障）**：桌面端一旦发现**任何一个条目 pending**，会
+  **中止整个启动**并弹出「应用无法启动或已意外停止」——日志为
+  `web boot: 1 entry did not activate / dsh-cost-balance-indicator: pending (waiting for service: settingsScope)`。
+  0.7.0 的浏览器半部要求了 `settingsScope`，而**桌面端捆绑的客户端不提供它**；CLI 组合里有这个服务，
+  所以用 CLI 探针自检**发现不了**（探针跑的是 CLI 的内核，不是应用的内核）。自检现在把
+  「两半 inject 必须为空」作为硬性不变量，并检查应用 crash 日志中是否存在**晚于本次安装**、
+  提到本插件的启动失败。
+- **凭据**：桌面端与 CLI 共用同一个 `DSH_HOME`（`~/.dsh`），密钥按
+  `config.apiKey` → 环境变量 → `ctx.credentials` 解析，始终留在主机侧。
+
+## 卸载（不想用了怎么删干净）
+
+**走的哪条安装路，就用哪条卸载路，别混用。** 两条路都实测过：卸完 profile 照常启动，
+本插件的路由、启动图条目、设置命名空间全部消失，日志里只剩启动 URL 一行。
+
+### 方式一：管理器装的 → 在应用「插件」页里卸载
+
+管理器卸载做三件事（本仓库在 %TEMP% 里复制真实桌面 profile 成 `desktop-probe-manager` 实测，
+DSH `0.1.5-rc.1`，2026-10-03）：
+
+1. 删掉 `package.json` 的 `dependencies` 条目；
+2. 从 `dsh.profile.bundles` 里去掉 `dsh-cost-balance-indicator`；
+3. 删掉 `<profile>\node_modules\dsh-cost-balance-indicator`（`.pnpm` 里有对应条目时一并删）。
+
+| | 卸载前（对照） | 管理器卸载后 |
+| --- | --- | --- |
+| 启动日志 | `dsh web: http://127.0.0.1:53288/?token=…`（仅 1 行） | `dsh web: http://127.0.0.1:53843/?token=…`（仅 1 行） |
+| 余额路由 | `GET /api/deepseek.balance -> 200`（真读到 ¥85.07） | `-> 404`，而对照路由 `GET /api/present.host -> 200` |
+| 启动图 | `present  dsh-cost-balance-indicator` | 三行全 `absent` |
+| 报错 | 无 | 无（没有 missing bundle / duplicate 之类） |
+
+> ⚠️ **反证：只删包、不删 bundles 条目会硬失败**（实测）：
+> `Error: dsh: cannot resolve profile bundle "dsh-cost-balance-indicator" from the dsh installation or …`，
+> 启动直接退出、拿不到 URL。所以管理器卸载后**请确认** `package.json` 的
+> `dsh.profile.bundles` 和 `dependencies` 里都没有它。
+
+### 方式二：`install.ps1` 装的 → 用 `-Uninstall`
+
+```powershell
+pwsh -File install.ps1 -Profile desktop -Uninstall
+# 只有 Windows PowerShell 5.1 的机器把 pwsh 换成 powershell 一样跑（脚本 ASCII-only，两个宿主都支持）
+```
+
+它删掉 patch 层里的 `- insert: - id: cost-balance-indicator` 行与 `node_modules` 副本，
+并**保留** `<profile>\.cost-balance-backup\` 备份。实测卸载后：
+
+- `cordis.patch.yml` 仍是**合法 YAML**（`yaml` 解析通过，条目只剩 `ui-settings-account / ui-chat / ui-settings / insert`），
+  `--dump-config` 退出码 0、153 行、**0 处**提到本插件；
+- `package.json` 仍是**合法 JSON**（`dsh.profile.bundles` = `@deepseek-ai/dsh-base, @deepseek-ai/dsh-web-app`）；
+- 重新启动：日志 1 行、余额路由 404、启动图全 `absent`，与方式一结果一致。
+
+> 注意：`-Uninstall` 只认 patch 层里的 `- insert:` 行。若本插件是**管理器方式**装的
+> （名字在 `dsh.profile.bundles` 里），它会打印
+> `WARNING: this profile still lists 'dsh-cost-balance-indicator' under dsh.profile.bundles.`，
+> 提示你去 `package.json` 删那一行——**不删就会撞上上面那条硬失败**。
+
+### ⚠️ 唯一会「装回来却什么都不出现」的残留：`disabled: true`
+
+应用启动失败时会弹「禁用第三方插件」，它往 profile patch 写入（自检第 6 节盯的就是这个指纹）：
+
+```yaml
+- id: cost-balance-indicator
+  disabled: true
+```
+
+- **管理器方式**下这条覆盖行会命中 bundle 插入的那一行（profile 层在 bundle 层之后应用），
+  于是 `--dump-config` 里的组合行是 `disabled: true`：包在、bundles 在、启动日志**一行、无报错**，
+  但余额路由 404、启动图没有它、设置命名空间也不存在——"装了却什么都没有"。
+  实测复现：`package.json` 有 bundles 条目 + patch 里留这条覆盖行 → 组合结果 `disabled: true`，
+  启动日志仍是干净的一行（这就是它难查的原因）。
+- **`install.ps1` 方式**下 `-Uninstall` 不会清掉这条覆盖行（它只在有 `- insert:` 行时才动手），
+  但重新安装时新行插在覆盖行**之后**，所以覆盖行打空、只多出一条
+  `patch: entry "cost-balance-indicator" not found` 警告，插件仍可用。
+- **最小修复**：把上面那两行从 `<profile>\cordis.patch.yml` 删掉（就两行），重启/热重载即恢复；
+  删掉后 `--dump-config` 的组合行不再带 `disabled: true`。
+
+### 卸载后还剩什么（全部无害，逐条实测）
+
+| 残留 | 位置 | 判定 |
+| --- | --- | --- |
+| 备份目录 | `<profile>\.cost-balance-backup\`（patch 层、`package.json`、旧 `lib` 快照） | 无害：没有任何代码读它；要彻底干净可整个删掉 |
+| 插件管理器的操作日志 | `<profile>\.plugin-manager\logs\operation-*\pnpm.log` | 无害：纯日志 |
+| 旧备份文件 | `<profile>\cordis.patch.yml.bak-*`、`package.json.bak-*`、`pnpm-*-*.bak-*` | 无害：不在加载路径上（其中旧 patch 备份里可能还写着本插件的 insert 行） |
+| 包管理器账本 | `<profile>\pnpm-lock.yaml`、`node_modules\.modules.yaml`、`.package-lock.json`、`.pnpm\lock.yaml`、`.pnpm-workspace-state-v1.json` | 无害：只是"曾经装过"的记录，卸载后启动实测干净（下次 `pnpm install` 自然收敛） |
+| 版本白名单 | `<profile>\pnpm-workspace.yaml` 的 `minimumReleaseAgeExclude` 里的 `dsh-cost-balance-indicator@x.y.z` | 无害：只是允许立即安装的版本清单 |
+| 设置文档里的配色 | 设置文档里的 `cost-balance-indicator: pillColors:` 段（CLI/探针写 `~/.dsh/settings.yaml`；桌面端的文档由应用自己管理，本机现存的是 `settings.yaml.imported` 旧副本，另有 Electron Local Storage 里的 `dsh-cost-balance-indicator.pillColors` 副本） | 无害，**但会被重新安装沿用**（见下） |
+| 别的插件里的一句注释 | `node_modules\dsh-completion-alert\lib\client.js` 里 `see dsh-cost-balance-indicator for the same shape` | 无害：第三方包的注释，与卸载无关 |
+
+**设置文档里的旧配色不会影响启动，也不会自己消失**：实测在设置文档里留着
+`cost-balance-indicator: pillColors:`（正是本机 `settings.yaml.imported` 里那套 `#C6D0F5` 深色），
+插件已卸载时启动照样只有 1 行日志、`settings/describe` 里本插件命名空间**不存在**（15 个命名空间，没有它）。
+一次运行期配色写入会把这段写回文档（实测由 `#C6D0F5` 改成 `#FF0000`），说明这里就是配色的落盘位置；
+重新安装后本插件还是同一个命名空间，所以**旧的深色配色会被直接沿用**（浏览器里那份本地副本也在）。
+想要真正从零开始：删掉设置文档里的 `cost-balance-indicator:` 段，并清一次浏览器/应用的站点数据。
+
+### 想再装回来
+
+- 管理器方式：插件页里重新填 `dsh-cost-balance-indicator`（或 GitHub 地址 / 本地目录，见上文表格）；
+- 手工方式：`pwsh -File install.ps1 -Profile desktop`（已设 `patchReload: live`，之后改 patch 不用重启）；
+- 装之前先确认上面那条 `disabled: true` 覆盖行已经删掉，否则装完什么都不出现。
+
+## 合并来源
+
+| 合并来源 | 版本 | 贡献 |
+| --- | --- | --- |
+| [`dsh-peak-indicator`](https://github.com/future007s/dsh-peak-indicator) | 0.1.26（MIT，© 2026 Jim） | 峰谷时段判定与人民币价格表、`peakCost` 会话费用投影、自动压缩成本护栏、会话头部峰谷徽标、每轮 token 价格片、设置卡片 |
+| `dsh-balance-indicator` | 0.1.0 | DeepSeek Key 余额读取（受鉴权的主机路由 + 凭证库解析）、余额胶囊与共享轮询 store |
+
+两者的授权与本地改动记录见 [NOTICE](NOTICE)；原来的 `settingsNamespace` 兼容垫片与人民币价格表都已并入。
+版本历史见 [CHANGELOG.md](CHANGELOG.md)。
+
+## 一个插件，四个界面
+
+```
+会话头部：  [标准模式] [本会话 ¥0.94 · 余额 ¥30.31] [💤 闲时 · 43 小时 11 分钟 后切换]
+每轮末尾：  [复制] [本轮 ¥0.08] [余额 ¥30.31]
+设置页：    成本与上下文（自动压缩开关 / 触发预算 / 保留 tokens）
+```
+
+四处胶囊依次是：**头部花费·余额**（合并）、**头部时段**、**本轮费用**、**本轮余额**。
+把光标移到任意一枚胶囊上停 0.5 秒，就会弹出带 RGB 轮盘的配色覆盖栏（见下）。
+
+- **会话头部**：**把「本会话花费」和「余额总量」合并成一枚胶囊**，两项之间用 `·` 分隔
+  （`本会话 ¥0.94 · 余额 ¥30.31`，order 20）；**当前时段状态单列成一枚胶囊放在它右侧**
+  （`💤 闲时 · 43 小时 11 分钟 后切换`，order 21）。两项各自缺失时只显示有的那一项：
+  还没花钱就只显示余额，余额读不到就显示 `余额 —`。
+  **单价不在胶囊上**：悬停这枚时段胶囊，覆盖栏最底部会给出当前时段每百万 tokens 的官方价
+  （`当前时段（闲时）每百万 tokens：缓存命中 ¥0.02 · 未命中 ¥1 · 输出 ¥4`，顺序 = 缓存命中输入 / 未命中输入 / 输出）；
+  模型没有官方峰谷价时那一行改说「该模型无官方峰谷价」，绝不编数字。
+- **每轮末尾**：token 价格片（order 100）之后紧跟余额胶囊（order 101，右侧）。
+- 四枚胶囊**同配色、同纵向尺寸**：`fontSize 12 / fontWeight 600 / lineHeight 18px /
+  padding 1px 8px / borderRadius 999 / 1px 边框`（总高 22px），同一 flex 行 `align-items:center` 对齐；
+  单位一致（人民币元、`¥`、两位小数）。
+  - 正常 → **浅色面板**（文字 `#0F1115` on `#F5F6F7`，边框 `#E1E5EE`）—— 自 0.8.2 起这就是内置默认
+  - **头部花费·余额**在余额低于阈值时 → 高峰红（`#ffffff` on `#e5484d`）；**头部时段**在高峰时段时同为红色
+  - 读不到 → 同几何中性灰（`#667085` on `#eef0f2`）
+
+## 悬停配色（四枚胶囊均可自定义）
+
+光标悬停到任意胶囊上 → 弹出**覆盖栏**：
+
+```
+┌──────────────────────────────────────────┐
+│ 胶囊配色        头部花费·余额    [充值]   │  ← 四枚胶囊的覆盖栏都有充值入口
+│ 预设 [深色] [●浅白]                       │  ← 两档预设（不动就是浅白；没有「默认」档）
+│ [文字色] [边框色] [背景色]                │  ← 三个属性分别调
+│  ╭───────╮   明度 ▬▬▬●▬  100            │
+│  │ RGB轮盘│   R    ▬●▬▬▬  15            │
+│  │   ●   │   G    ▬▬▬▬●  123           │
+│  ╰───────╯   B    ▬▬●▬▬  61            │
+│              ■ #0F1115   [🖌 取色]        │  ← 取色：自建吸色模式（无需浏览器原生支持）
+│      [ 单个 ][●整体 ]                     │  ← 左=单个，右=整体（默认右侧，滑块动画）
+│  预览 [余额 ✓]   [已保存][保存][恢复浅色默认] │
+│  …原有的悬停明细文字（余额/价格/时段）…   │
+├──────────────────────────────────────────┤
+│ 当前时段（闲时）每百万 tokens：缓存命中 ¥0.02 · 未命中 ¥1 · 输出 ¥4 │  ← 价格行：覆盖栏最底部
+└──────────────────────────────────────────┘
+```
+
+- **0.5 秒悬停意图**：光标要在胶囊上**停 0.5 秒**，覆盖栏才出现（`HOVER_OPEN_MS = 500`）；
+  从胶囊移到覆盖栏、在覆盖栏里操作都不会让它消失，离开 240ms 后才收起。
+  扫过顶栏或某轮统计行时不会再被弹窗打断。
+- **两档预设**（覆盖栏顶部，与"整体/单个"共用作用域）。**没有「默认」预设**：
+  内置配色本身**就是浅白**，所以未自定义时高亮的正是「浅白」，两个重置按钮（「恢复浅色默认」/「全部恢复浅色默认」）
+  清的也是这一档 —— 但清空后保留状态信号（见下）：
+
+  | 预设 | 效果 | 取值（文字 / 边框 / 背景） |
+  | --- | --- | --- |
+  | 深色 | 与桌面端深色主题一致 | `#F9FAFB` / `#353638` / `#2C2C2E` |
+  | 浅白 | 与桌面端浅色主题一致，**即内置默认配色** | `#0F1115` / `#E1E5EE` / `#F5F6F7` |
+
+  「恢复浅色默认」是**清空**该作用域的自定义色，于是回到内置状态色：浅白面板 + 高峰/低余额变红、读不到变灰；
+  而点「浅白」预设是**写入**那三个 hex（外观一样，但此时状态信号被这三色覆盖）。
+
+  深色 / 浅白取自 DSH 桌面端自身的深色与浅色表面（`--dsw-alias-label-primary` 作文字，
+  深色用 `--dsw-alias-bg-layer-2`、浅色用 `--dsw-alias-bg-module-platform` 作背景，
+  边框用 `--dsw-static-neutral-bluish-800` / 浅色 surface 边框），所以在对应模式里读起来像原生控件。
+  当前生效的预设会高亮（不动时就是「浅白」），手改任一颜色后高亮自然消失；
+  预设是普通 hex，选完还能继续用轮盘微调。
+
+- **RGB 调色轮盘**：色相环 + 饱和度（点/拖轮盘即改色），旁边是 **明度** 与 **R/G/B** 滑块（0–255）
+  和色值预览 `#RRGGBB`；三者联动（内部用 HSV↔RGB 互转）。
+- **取色（自建吸色模式，不依赖 `window.EyeDropper`）**：色值右边的 **「🖌 取色」** 按钮现在**永远都在**，
+  点它就进入本插件自己的吸色模式 —— 不再是浏览器原生 `EyeDropper`。
+  原生取色器是**浏览器级模态**，打开期间页面收不到任何鼠标事件，所以「右键取消」根本无从实现；
+  自建模式则是一层 `position: fixed; inset: 0; cursor: crosshair` 的**全屏透明捕获层**（**不给页面加任何底色**，
+  观感与取色前完全一致），加一枚**跟随光标的预览小片**（约 90×26，偏移光标右下 14px）：
+  显示当前色块与色号，并带一行提示 `左键确认 · 右键取消`（en `Click to confirm · right-click to cancel`）。
+  颜色取自 `document.elementFromPoint(x, y)`：该元素的 `backgroundColor` 不是透明就用它，
+  否则**向上找最近一个有背景的祖先**，都没有才退回它的 `color`（纯文字）。
+  取到的值都经 `hexToRgb` / `rgbToHex` / `cleanColor` 归一化，**只有 `#RRGGBB` 会写进配色**。
+  **左键**=确认并写入当前这一项，**右键 / `contextmenu` / `Esc`**=取消，任何出口都会移除捕获层与小片、
+  注销全部监听（不留悬挂的监听器），窗口缩放同样退出模式。
+- **覆盖栏开合动画**：弹出时**淡入 + 从 0.96 缩放**，带轻微过冲，约 140ms；收起时同一动效**反向**播放约 100ms。
+  `transform-origin` 由胶囊的屏幕位置（`anchor`）推算，所以覆盖栏是**从胶囊里长出来的**，不是从中心放大。
+  关键帧由**一个幂等的 `<style>`** 注入（同一份文档只注入一次，并先 `getElementById` 认领已有标签）。
+- **保存按钮的动效**：悬停微抬、`:active` 按下缩到 0.96、`saving` 时轻微脉动（呼吸）、
+  `saved` 时短暂放大并补一个 `✓`（按钮本来的绿色保留）、`error` 时抖动一下并转红。
+  动画全部由 **`data-cost-balance-save-state`** 驱动，而它就是覆盖栏状态行读的**同一个** `save.status`，
+  所以动效不可能显示一个配色存储并未处于的状态。
+- **两处动效都尊重 `prefers-reduced-motion: reduce`**：覆盖栏退化为**纯淡入淡出（无缩放）**，
+  保存按钮的悬停/按下/抖动/放大全部关闭，`saving` 只留一个很轻的明暗呼吸。
+- **文字色 / 边框色 / 背景色**：三个属性分开调，互不影响。
+- **整体 / 单个**：一个带**滑动动画**的开关，左侧是「单个」（只改当前这一枚），右侧是「整体」（四枚一起改），
+  **默认停在右侧=整体**；选中项底色用主题 accent、文字用主题反色
+  （`--dsw-alias-brand-primary` + `--dsw-alias-label-primary-inverted`），选中文字不会与滑块底色撞色。
+  整体调色写入 `all`，单个调色写入对应胶囊；显示优先级是
+  「本胶囊自定义字段 → `all` 整体 → 内置状态色」，所以整体调完还能单独微调某一枚。
+- **每枚胶囊的覆盖栏右上角都有「充值」**：新标签打开充值页
+  <https://platform.deepseek.com/top_up>；已配置 key 时用 `config.baseUrl` 推导的充值页，
+  **未配置 key 时改开登录页**，自建网关则用它自己的根地址（0.8.1 起四枚一致）。
+- **覆盖栏配色跟随当前皮肤**：底色/文字/边框/强调色全部取自主题变量
+  `--dsw-alias-bg-layer-3` / `--dsw-alias-label-primary` / `--dsw-alias-border-l2` / `--dsw-alias-brand-primary`
+  等，因此换任何皮肤后覆盖栏自动跟着变，不写死颜色（**只有两档预设是固定 hex**，因为那正是桌面端自己的面板色）。
+- **布局不溢出**：滑块是 `min-width: 0` 的 flex 项 —— `range` 输入自带固有最小宽度，不解除会把右侧数字挤出边框。
+- **轮盘必须是正圆（否则颜色和形状对不上）**：皮肤在 `*, ::before, ::after` 上设了
+  `corner-shape: var(--dsw-corner-shape)`，值为 `superellipse(1.5)` —— 这会把**每个**
+  `border-radius: 50%` 画成圆角方形（应用自己的圆点、开关滑块都显式写 `corner-shape: round` 来豁免）。
+  轮盘的色相环本身就是圆的，所以这里也必须写 `corner-shape: round`；否则圆形色环套在圆角方形容器里，
+  四角会露出完全饱和的错位色相 —— 这正是「颜色对齐搞错了」的根因。
+- **渐变必须写成长属性**：`background` 是简写，会重置它覆盖的所有长属性。若 `background` 写在
+  `background-clip` 之后，clip 会被悄悄改回 `border-box`，渐变渗到半透明边框下，圆盘外缘多出一圈错色细边。
+  因此轮盘用 `background-image` + `background-clip: padding-box` + `background-origin: padding-box`。
+- **原有明细不丢**：价格明细、余额明细、时段与北京时间等原悬停文字移到了覆盖栏底部；
+  时段胶囊与本轮费用胶囊的覆盖栏**最后一行**是当前时段的官方单价
+  （`当前时段（闲时）每百万 tokens：缓存命中 ¥0.02 · 未命中 ¥1 · 输出 ¥4`，命中/未命中/输出固定顺序，
+  该行带独立上边框、是面板的最后一块）。余额胶囊**没有**这一行 —— 它的覆盖栏本来就是余额明细。
+- **保存与持久化**：配色**自动保存**（改动后 300ms 防抖写入），覆盖栏里另有 **「保存」** 按钮可立即写入，
+  并在下方用一行状态如实回报：
+
+  | 状态 | 含义 |
+  | --- | --- |
+  | 保存中… | 正在写入主机设置（按钮轻微脉动） |
+  | 已保存 | 已写入 `~/.dsh/settings.yaml`（按钮短暂放大、变绿并补一个 `✓`） |
+  | 已存本机（主机未接受…） | 连接/主机不接受写入（例如 memory 模式），配色改存浏览器本地 |
+  | 保存失败：{原因} | 主机拒绝，原因照原样显示（按钮抖动一下并转红） |
+
+  两层存储：**主机设置文档是唯一权威**（写成功即丢弃浏览器副本，多标签页共享）；浏览器副本只在写入不可用时
+  兜底，保证**退出再进入不会丢配色**。点「恢复浅色默认」/「全部恢复浅色默认」会同时清掉两层。
+- **写设置的 API 是 `set(field, value)`（或原子 `mutate(ops)`），不是 `write({op,path,value})`**：
+  这一版客户端没有 `write`，旧写法**不会报错也不会写入**——配色看着改好了、一刷新就回到默认，
+  正是这个原因。本插件现在按 `set → mutate → write` 依次探测可用写法，主机不可写时直接转本地兜底并如实提示；
+  同文件里的自动压缩设置卡也顺带修好了（它原来也用错了 API）。
+- **后端按 shell 依次探测，桌面端走 `remote.settings` RPC**（0.8.2）：
+  1. **`settingsScope` 绑定器**（CLI/web profile 有）——优先级最高；
+  2. **`remote.settings` RPC**（桌面端唯一设置面）——桌面端捆绑的客户端**不提供** `settingsScope`，
+     它的设置界面自己驱动 `describe()` / `mutate(ns, ops, expectedRevision)`；本插件用同一对 API
+     把 `pillColors` 写进同一个设置文档，因此桌面端也能保存到 `~/.dsh/settings.yaml`。
+     该服务是**命名空间服务**：未注入的上下文里读它会被 Cordis 抛
+     `cannot get property "remote.settings" without inject`，所以解析分三步且**全部加保护**：
+     先 `ctx.get("remote.settings")`，再直接属性读取（捕获注入异常），最后 `ctx.inject(["remote.settings"], cb)`；
+     服务是异步起来的，三条路都没结果时按 0.12/0.3/0.8/1.5/2.6 秒**重试**，成功即停，任一步都不允许中断挂载。
+     扩展栏与自诊断报告会写明**哪条路成功**（`resolvedVia`）与后端种类（`scope-binder` / `remote-rpc` / `none`）；
+  3. **浏览器本地存储**——三路都没有时才用，状态显示「已存本机」。
+  `已存本机` 现在确实等于「这个 shell 给不出任何后端」，而不是「后端存在但没绑上」。
+- **无法解析的颜色一律丢弃**（只接受 `#rgb`/`#rrggbb`），避免把任意字符串写进样式。
+
+## 与两个旧插件的关系
+
+**不要同时挂载**：本包与原 `dsh-peak-indicator` 会注册同一个 `peakCost` 会话投影。
+`install.ps1` 会自动处理：
+
+1. 把包复制到 `<profile>/node_modules/dsh-cost-balance-indicator`；
+2. 在 profile 的 `cordis.patch.yml` 里插入 `cost-balance-indicator` 行；
+3. 把 bundle 提供的 `peak-indicator` 行改为 `disabled: true`（不卸载 bundle，只停用这一行）；
+4. 删除独立余额插件留下的 `balance-indicator` 行。
+
+所有被改动的文件先备份到 `<profile>\.cost-balance-backup\`。
+
+```powershell
+pwsh -File install.ps1                  # 装进 web profile
+pwsh -File install.ps1 -Profile headless
+pwsh -File install.ps1 -Uninstall       # 撤回（旧插件原封不动）
+```
+
+`web` profile 是 `patchReload: live`：保存 patch 文件即热挂载，**不用重启 DSH**，刷新浏览器即可。
+`startup` profile 需要重启。
+
+### 换装时的竞态（安装脚本已处理）
+
+如果 profile 里还挂着旧插件，**不要**在同一个 patch 写入里既禁用旧行又插入新行：
+旧插件此刻仍持有 `peakCost` 投影和 `peakCompactStats` 服务，新插件的 `apply` 会中止，
+结果就是浏览器端徽标出现了、主机端路由却没注册（余额显示成灰色 `余额 —`）。
+安装脚本因此把换装拆成**两次写入**：先只退役旧行，等 `-SettleSeconds`（默认 5 秒）让热重载落地，
+再插入新行。冷启动不存在这个竞态（被禁用的行根本不会激活）。
+
+```powershell
+pwsh -File install.ps1 -SettleSeconds 8     # 机器慢 / profile 大时放宽等待
+```
+
+如果 profile 是用 `dsh.profile.bundles` 挂载本包的（此时插入来自 bundle patch，无法拆分），
+换装建议直接重启 DSH。
+
+想随 `dsh plugin` / pnpm 长期留存，可在 profile 的 `package.json` 里再声明：
+
+```json
+{
+  "dependencies": { "dsh-cost-balance-indicator": "file:<本包所在目录>" },
+  "dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web-app", "...", "dsh-cost-balance-indicator"] } }
+}
+```
+
+代价：`bundles` 里声明了却装不上会让整个 profile 启动失败；只用 patch 行的方式最坏只是少一个徽标。
+
+## 配置（可选）
+
+在 profile 的 patch 行里传 `config`，全部可省：
+
+```yaml
+- insert:
+    - id: cost-balance-indicator
+      name: 'dsh-cost-balance-indicator'
+      config:
+        # —— 计价与自动压缩（原 dsh-peak-indicator）——
+        peakWindows: [[9, 12], [14, 18]]
+        beijingOffsetMinutes: 480
+        offPeakDiscount: 0.5
+        policyEffectiveDate: '2026-08-17T00:00:00+08:00'
+        weekendOffPeakEffectiveDate: '2026-08-23T00:00:00+08:00'
+        prices: {}                 # 自定义模型价格（元/百万 tokens）
+        autoCompact:
+          enabled: true            # 默认开启；false 关闭
+          contextBudget: 100000
+          retainTokens: 15000
+          referenceWindow: 256000
+        # —— 余额（原 dsh-balance-indicator）——
+        apiKeyEnv: DEEPSEEK_API_KEY
+        lowBalanceThreshold: 5     # 低于该金额（元）变红
+        cacheMs: 20000             # 主机侧缓存
+        timeoutMs: 10000           # 单次上游超时
+        baseUrl: https://api.deepseek.com   # 自建/代理网关
+        apiKey: ''                 # 直接给密钥（一般不必）
+```
+
+自动压缩开关同时出现在 **设置 → 成本与上下文**（设置命名空间 `cost-balance-indicator`，实时生效）。
+
+## 工作原理
+
+| 半边 | 职责 |
+| --- | --- |
+| `lib/index.js`（host） | `peakCost` 会话投影（按每条用量事件自身时间戳的峰谷价计价，含缓存命中价，`stateVersion 5`）；自动压缩护栏（通过 loader 配置 `compaction-basic`，记录每步节省）；受 Connection 鉴权保护的 `GET /api/deepseek.balance` 路由 + `deepseekBalance` 服务，密钥按 `config.apiKey` → 环境变量 → `ctx.credentials` 解析，**密钥不进浏览器**；余额缓存 20s、并发去重、失败回退上次成功值 |
+| `lib/client.js`（browser） | 峰谷徽标 + 每轮价格片 + 设置卡片（原插件逻辑不变）；余额胶囊注册两次（头部 order 21、轮末 order 101），共用一个模块级 store（整页最多每分钟一次请求），`useSyncExternalStore` 驱动 |
+
+`inject` 只声明 `sessionProjections / tokenMeter / loader / settings`：余额路由在
+`ctx.inject(["connection"], …)` 里挂载，凭证库用 `ctx.get("credentials")` 惰性读取，
+因此**没有 Web 载体的组合里计价半边照常工作**（只是没有余额徽标）。
+
+## 测试与验证
+
+```powershell
+npm test                                        # 54 项：主机 18 + 浏览器 36，含一次真实余额读取
+pwsh -File verify/self-check.ps1                # 一键自检：组成树 / open_dsh / 冷启动 / 运行中实例
+node verify/check-cost-balance.mjs              # 真实实例端到端探针
+node verify/check-cost-balance.mjs --port 51185 # 指定端口（换端口要换 cookie 受众）
+node verify/boot-graph.mjs                      # 这一实例的启动图里到底有哪些客户端模块
+```
+
+### 浏览器可视化验证（`verify/shot.mjs`）
+
+样式问题（溢出、留白、形状/颜色错位）单元测试看不见，所以自检之外还有一条真浏览器回路：
+用 Edge 的 DevTools 协议连到运行中的界面，先点开会话、再把鼠标事件派发到某枚胶囊上把覆盖栏打开，
+然后按 CSS 像素裁剪 + 放大截图：
+
+```powershell
+# 1. 起一个开着调试端口的 Edge（headless 或普通窗口都行）指向 dsh 打印的带 token 的地址
+msedge.exe --headless=new --remote-debugging-port=9222 --user-data-dir=%TEMP%\edge-cbb "http://127.0.0.1:3080/?token=..."
+# 2. 打开会话 → 悬停头部余额 → 把轮盘区域放大 4 倍截下来
+node verify/shot.mjs --no-cache --reload --out wheel.png `
+  --pre-eval-file verify/open-session.js --hover ".dsh-cost-balance-indicator-balance" `
+  --clip "555,119,124,124" --scale 4 --eval "getComputedStyle(document.querySelector('[data-cost-balance-colors] div')).borderRadius"
+```
+
+`--no-cache`（`Network.setCacheDisabled`）很关键：否则页面会继续执行缓存里的旧 bundle，
+改动看起来像没生效。这一回路正是发现上面两个根因的地方 —— 轮盘被画成圆角方形、以及
+`background` 简写把 `background-clip` 重置掉，都是只有像素能看出来的。
+
+`verify/self-check.ps1` 是给「装完之后 DSH 还能不能正常打开、有没有冲突」这个问题准备的一键自检，
+19 项逐条打印 PASS/FAIL，全过退出码 0：
+
+1. **组成树**：`dsh --profile <p> --dump-config` 退出码 0、本插件行恰好一行、
+   `peak-indicator` 带 `disabled: true`、没有遗留的 `balance-indicator` 行；
+2. **open_dsh 前置补丁**：`dsh-peak-indicator-compat.ps1` 干净幂等（exit 0）；
+3. **open_dsh 自检**：`open_dsh_check.ps1` 10/10、exit 0；
+4. **冷启动**：用 open_dsh 里 pin 的同一个核，对**同一个 profile** 在随机空闲端口再起一个实例，
+   断言日志无 error/warning、余额路由 200、启动图只有合并插件（旧插件 absent）、
+   `/plugins` 包内含 6 个界面组件；随后拆掉第二实例、释放端口、按快照还原 `storages`；
+5. **运行中实例**：对 `-LivePort`（默认 3080）上的实例再探一次路由。
+
+```powershell
+pwsh -File verify/self-check.ps1 -SkipColdBoot     # 只查组成树与运行中的实例
+pwsh -File verify/self-check.ps1 -Profile web -LivePort 3080
+```
+
+`verify/boot-graph.mjs` 用来确认「禁用的行真的退出了启动图」：对运行中的实例打印
+`dsh-peak-indicator / dsh-balance-indicator / dsh-cost-balance-indicator` 各自 present/absent
+（换装后应为 absent / absent / present）。
+
+`npm test` 覆盖：合并后的 Config 默认值、峰谷/周末/旧价表定价、`peakCost` 折叠（含同一 turn/step
+的重报替换）、投影注册、无 Web 载体时计价半边仍挂载、自动压缩委派与关闭、余额缓存/强制刷新/失败回退/
+错误路径/密钥优先级、设置段 schema 接受浏览器写入的配色、四个界面的槽位与排序（21>20、101>100）、
+余额胶囊与价格片的**逐字段几何与色值相等**、两个余额注册用同一组件、共享轮询去重；配色部分还覆盖：
+默认无自定义（四枚都用内置状态色）、整体调色改四枚、单个调色只改一枚且全局值仍生效、覆盖栏默认写入
+`all`（右侧）、切到「单个」后写入对应胶囊、三个属性分别可调、重置单个/全部、持久化配色被正确采纳、
+非法颜色被丢弃、轮盘与 R/G/B/明度滑块存在且联动、滑块可收缩不溢出、轮盘 `corner-shape: round` 强制正圆且只用 background 长属性、滑块开关有动画且选中项用反色、四枚胶囊的覆盖栏都有充值入口（无 key 时落到登录页）、0.5 秒悬停意图（200ms 不开 / 500ms 开、离开取消）、**两档预设的取值与高亮（无自定义时高亮「浅白」、内置色即浅色 hex、状态色仍为红/灰）**、预设跟随整体/单个作用域、头部合并胶囊的取值/分隔符/缺项降级（没花钱、读不到余额），**自建取色模式（没有 `window.EyeDropper` 也有「取色」按钮、武装后出现透明捕获层与 90×26 预览小片并带提示、`elementFromPoint` → 计算背景色 → 最近的祖先背景 → 文字色的取值链只产出 `#RRGGBB`、左键确认写入并退出、右键/`contextmenu`/`Esc` 取消且不写入、退出后不留监听器）、`data-cost-balance-save-state` 跟随 `saving`/`saved`/`error`、覆盖栏弹出/收起的动画与由 anchor 推算的 `transform-origin`、样式表只注入一次、`prefers-reduced-motion` 下退化为纯淡入淡出**，以及时段胶囊**标签不含 ¥**、价格行落在覆盖栏最底部（当前时段三项官方价、顺序命中/未命中/输出；未知模型说「无官方峰谷价」；余额胶囊没有这一行）、桌面端 `remote.settings` 后端绑定与重试（见下）。
+
+`verify/check-cost-balance.mjs` 解决了一个现实问题：`/api` 通道对未鉴权请求一律先返回 401，
+curl 分不清「路由没挂」和「没登录」。它用凭证库里的 `client-connection/browser-session` 密钥现场签一枚
+浏览器同款 cookie，对照已知路由与余额路由，并检查首页启动图与该插件 `/plugins` 包内的四个组件是否就绪。
+
+测试需要 `@deepseek-ai/schemastery`、`zod`、`@deepseek-ai/cordis`、`react`（peerDependencies）。
+在本机 DSH 环境下，包目录里放一个指向 `~/.dsh/profiles/node_modules` 的 `node_modules` 目录联接即可
+（已 gitignore）；独立开发时 `npm install` 拉取这些 peer 即可。
+
+## 打包（已完成，未发布）
+
+```powershell
+npm run pack        # -> dist/dsh-cost-balance-indicator-0.7.3.tgz
+```
+
+发布到 GitHub / npm 的步骤（**本次未执行**，你确认后再跑）：
+
+```powershell
+git init; git add -A; git commit -m "dsh-cost-balance-indicator 0.7.3"
+gh repo create dsh-cost-balance-indicator --public --source . --push
+npm publish --access public     # 需先 npm login；包名 dsh-cost-balance-indicator 在 npm 上未被占用
+```
+
+发布前建议确认：LICENSE/NOTICE 保留上游版权声明（MIT 要求）；仓库不要提交 `node_modules/`、`dist/`。
+
+## 已知限制
+
+- **浏览器半部的运行期表现由桩测覆盖**：`test/client.test.mjs` 用最小 React 桩真实执行 bundle 工厂、
+  `apply(ctx)` 与全部界面渲染，并逐字段断言几何/色值，但没有真实浏览器像素截图。
+- 余额是轮询（60s）+ 主机缓存（20s），刚花掉的钱最多约 1 分钟后反映。
+- 价格表来自 DeepSeek 官方页面（2026-09-10 12:00 北京时间生效），调价后需更新 `lib/index.js` 里的
+  `MODEL_PRICES`（客户端同表在 `lib/client.js`）。
+- 余额徽标与价格片同样遵循统计行显隐：最后一轮常显，历史轮悬停才显示头部与行内元素。

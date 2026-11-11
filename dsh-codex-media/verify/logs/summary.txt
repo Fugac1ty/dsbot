@@ -1,0 +1,27 @@
+INFO  plugin dir: /home/ubuntu/dsh-agentchat/插件/dsh-codex-media
+INFO  isolated DSH_HOME: /home/ubuntu/dsh-agentchat/插件/dsh-codex-media/verify/.dsh-home
+INFO  dsh bin: /home/ubuntu/dsh-agentchat/dsh-0.2-trial/node_modules/@deepseek-ai/dsh/lib/bin.js
+INFO  mode=full bundle=dsh-codex-media tools='codex_imagegen codex_vision' port=3199 probe=1 reset=1
+INFO  resetting isolated DSH_HOME: /home/ubuntu/dsh-agentchat/插件/dsh-codex-media/verify/.dsh-home
+INFO  profile web missing; initializing baseline via --dump-config
+PASS  baseline profile web initialized (dump-config exit 0)
+PASS  profile bundles: ["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-codex-media"]
+PASS  profile node_modules/dsh-codex-media -> /home/ubuntu/dsh-agentchat/插件/dsh-codex-media
+PASS  --dump-config exit 0
+PASS  --dump-config layer header '# == dsh-codex-media'
+PASS  --dump-config entry '- id: dsh-codex-media'
+PASS  --dump-config entry 'name: dsh-codex-media'
+PASS  --dump-config has no stale dsh-codex-vision entry
+INFO  installed verify-only registry probe entry
+INFO  [positive] pid=161115 port=3199 log=/home/ubuntu/dsh-agentchat/插件/dsh-codex-media/verify/logs/02-positive-boot.log (marker env DSH_CODEX_MEDIA_BOOT_MARKER=1)
+INFO  [positive] ready after 3s: marker=1 url=1 probe=1
+PASS  [positive] port 3199 was listening
+PASS  [positive] process exited cleanly (wait rc=0, 4s); no residue
+PASS  [positive] port 3199 released
+PASS  [positive] activation marker: [dsh-codex-media] bundle loaded: registered tools codex_imagegen, codex_vision (command=codex, imageSandbox=workspace-write)
+PASS  [positive] no activation-failure diagnostic
+PASS  [positive] web app reached steady state ('dsh web:' line)
+PASS  [positive] probe registry: VERIFY-PROBE codex_imagegen=registered codex_vision=registered
+PASS  [positive] probe schemas: VERIFY-PROBE schemas codex_imagegen=yes codex_vision=yes total=3 names=codex_vision,codex_imagegen,working_directory
+INFO  removed verify-only registry probe entry
+PASS  RESULT: all selected checks passed

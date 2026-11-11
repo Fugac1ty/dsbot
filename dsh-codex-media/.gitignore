@@ -1,0 +1,4 @@
+node_modules/
+.install-test/
+verify/.dsh-home/
+*.tmp-*

@@ -1,0 +1,90 @@
+# 峰谷电表 dsh-valley-meter
+
+<div align="center">
+
+**DeepSeek Harness 峰谷电表 · 余额徽章 + 悬停峰谷时间轴**
+
+余额数字徽章 · 悬停 24 小时峰谷时间轴 · 官方余额 5 秒刷新 · 今日消耗独立计费 — 10 套沉稳配色预置 + 谷/峰色自定义,全中文界面。
+
+[![npm version](https://img.shields.io/npm/v/dsh-valley-meter)](https://www.npmjs.com/package/dsh-valley-meter)
+[![npm downloads](https://img.shields.io/npm/dm/dsh-valley-meter)](https://www.npmjs.com/package/dsh-valley-meter)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-dsh--plugin-4176E6)](https://github.com/deepseek-ai/deepseek-harness)
+
+**English** | 中文
+
+</div>
+
+![余额数字徽章](docs/preview.png?v=5)
+
+**悬停浮现峰谷时间轴**
+
+![悬停态](docs/screenshots/hover.png)
+
+![悬停展开演示](docs/demo.gif)
+
+## 这是什么
+
+一个**极简**的 DeepSeek Harness 插件,在输入框上方右侧挂一枚低调的**余额数字徽章**;光标悬停时,徽章左侧浮现一条 **24 小时峰谷时间轴**:
+
+| 读数 | 说明 |
+|---|---|
+| **余额数字徽章** | 默认只显示官方账户余额数值(插件独立查询 `/user/balance`,每 5 秒自动刷新);框内分「¥」「数值」两组,默认无任何多余元素 |
+| **峰谷时间轴** | 悬停浮现的 24 小时横向时间轴:峰段(橙) / 谷段(蓝)双色 + 白色发光指针标当前本地时刻,00/06/12/18/24 刻度在上方;周末全天低谷时整条轴为谷色 |
+| **今日消耗** | 当日费用(插件独立监听 `llm/stream` 实时计费,写入账本) |
+
+## 核心特性
+
+- 💳 **一键充值**:点击框内的人民币符号「¥」即在新页签打开 DeepSeek 官方充值页(`platform.deepseek.com/top_up`),余额不够时不用再翻菜单找入口;光标移入徽章时,¥ 身下会浮现一枚圆形底色,其左侧与徽章左端圆角完全重合。
+- 🎨 **配色方案**:内置 10 套沉稳配色预置(One Dark / Dracula / Nord / Tokyo Night / Gruvbox / Solarized + 中国传统色 / 潘通),也可用拾色器自定义谷色 / 峰色,改完即时生效。
+- 👆 **悬停即见**:默认只显示余额数字,光标悬停才浮现峰谷时间轴,不占输入区空间。
+- ⚡ **实时余额**:官方余额每 5 秒自动刷新,无需手动操作。
+- 🕐 **本地时区时间轴**:峰/谷时段按 UTC 窗口自动换算成本地时区显示,白色发光指针标当前时刻。
+- 🗓️ **周末全天低谷(官方规则)**:2026-08-23 00:00 起,周六、周日全天不再区分峰谷,统一按低谷价计费。插件按**北京时间**判断周末,当天整条时间轴显示为谷色,计费自动走低谷价(不会再把周末按高峰价多算一倍);倒计时直接指向下周一 09:00 的首个峰时。可在设置面板关闭该规则。
+- 🔌 **完全独立、实时计费**:插件自己监听 `llm/stream` 捕获用量、按官方价格折算费用,自己查询 DeepSeek 官方余额,自己维护账本(`~/.dsh/storages/valley-meter/ledger.json`),**不依赖任何其它插件**。
+
+## 安装
+
+```bash
+# npm（推荐）
+npm install dsh-valley-meter
+
+# 或从 GitHub 直发安装
+dsh plugin add github:uckkk/dsh-valley-meter
+```
+
+然后重启 dsh web 页面即可看到余额数字徽章。
+
+## 配置
+
+打开 **设置 → 峰谷电表**:
+
+- **配色方案**:10 套预置(编辑器主题 6 套 + 中国传统色 / 潘通 4 套)或「自定义」。
+- **谷时颜色 / 峰时颜色**:拾色器,选「自定义」后即时生效。
+- **余额显示标题** / **今日花费显示标题** / **显示倒计时**:分别开关。
+- **周末全天低谷**:默认开启。官方 2026-08-23 起周六、周日全天按低谷价计费;若官方规则再变,可在此关闭,关闭后周末恢复按峰谷窗口计费。
+
+配置写入 `~/.dsh/storages/valley-meter/config.json`。
+
+## 数据来源说明
+
+本插件**独立计费与查询**,不依赖任何其它插件:
+
+- **今日费用**:监听 `llm/stream` 捕获每次调用的 usage,按内置模型价格表(含峰/谷两档)+ 峰谷时段折算,写入自己的账本 `~/.dsh/storages/valley-meter/ledger.json`。
+- **账户余额**:用 DSH 凭据库/`DEEPSEEK_API_KEY` 查询 DeepSeek 官方 `/user/balance`,每 5 秒自动刷新。
+- **峰谷窗口**:内置于插件(默认 UTC 01–04、06–10 = 北京时间 09:00–12:00、14:00–18:00),写在 config.json 的 `peakWindows` 里;设置面板目前只提供周末规则开关,不提供窗口编辑器。
+- **周末规则**:官方 2026-08-23 00:00(北京时间)起,周六、周日全天统一按低谷时段价格计费;工作日高峰为北京时间 9:00–12:00 与 14:00–18:00,低谷价为高峰价的一半。插件按北京时间判定周末,生效前的时刻仍按原规则计算。
+
+未配置 API Key 时,余额显示「暂无数据」,今日费用仍正常累计,不会报错。
+
+## 开发
+
+```bash
+pnpm install
+pnpm run build   # 构建 lib/client.js bundle
+pnpm run check   # typecheck + test + build
+```
+
+## License
+
+MIT

@@ -1,0 +1,54 @@
+{
+  "name": "dsh-balance-peek",
+  "version": "2.0.0",
+  "description": "在 DSH 侧边栏底部用两行极简文字显示 DeepSeek 余额与当前峰/谷时段。Minimal balance and peak/off-peak readout at the DSH sidebar foot.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "author": "QWHYQ114514-cell",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QWHYQ114514-cell/dsh-balance-peek.git"
+  },
+  "homepage": "https://github.com/QWHYQ114514-cell/dsh-balance-peek#readme",
+  "bugs": {
+    "url": "https://github.com/QWHYQ114514-cell/dsh-balance-peek/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek",
+    "balance",
+    "sidebar",
+    "peak-valley"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  }
+}
