@@ -1,7 +1,7 @@
 /**
- * SurfCore 拆分 · 浏览器半边公共 UI 套件（模板）。
+ * DSBot 拆分 · 浏览器半边公共 UI 套件（模板）。
  *
- * 来源：旧单体插件 plugins/surfcore/lib/client.js 的通用部分，由
+ * 来源：旧单体插件 plugins/dsbot/lib/client.js 的通用部分，由
  * tools/extract-client-kit.mjs 按「factory 顶层声明」自动抽取，未改行为。
  * 生成时间与来源行号见 tools/extract-client-kit.mjs 的输出。
  *
@@ -374,7 +374,7 @@
               onClick: async () => {
                 const r = await browseNative(f.browse, f.label || "选择路径").catch((e) => ({ ok: false, error: e.message }));
                 if (r.ok && r.path) onChange(String(r.path));
-                else if (!r.cancelled) (window.__surfcoreToast || console.warn)(r.error || "打不开选择框，请手动填写");
+                else if (!r.cancelled) (window.__dsbotToast || console.warn)(r.error || "打不开选择框，请手动填写");
               },
             }, "浏览…"));
         }
@@ -470,8 +470,8 @@
         try {
           const r = await browseNative(mode, title || (mode === "file" ? "选择文件" : "选择目录"));
           if (r.ok && r.path) onPick(String(r.path));
-          else if (!r.cancelled) (window.__surfcoreToast || console.warn)(r.error || "打不开选择框，请手动填路径");
-        } catch (e) { (window.__surfcoreToast || console.warn)(e.message); }
+          else if (!r.cancelled) (window.__dsbotToast || console.warn)(r.error || "打不开选择框，请手动填路径");
+        } catch (e) { (window.__dsbotToast || console.warn)(e.message); }
       },
     }, label);
 

@@ -1,0 +1,40 @@
+{
+  "name": "dsbot-qq",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "QQ 桥接进程控制、qq-mode 命名空间、白名单、SnowLuma、QQ 参数",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "scripts": {
+    "test": "node scripts/test-smoke.mjs",
+    "test:vendor": "echo \"在本工作区根目录跑：node tools/vendor.mjs --pkg dsbot-qq --roots plugins/dsbot/lib/bridge.js,plugins/dsbot/lib/qq-mode.js,plugins/dsbot/lib/qq-fish-guard.js,plugins/dsbot/lib/snowluma-install.js,plugins/dsbot/lib/doctor.js,plugins/dsbot/lib/store.js,plugins/dsbot/lib/paths.js,plugins/dsbot/lib/http-guard.js\""
+  },
+  "files": [
+    "lib",
+    "locale",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md"
+  ],
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml"
+      ]
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  },
+  "license": "MIT"
+}

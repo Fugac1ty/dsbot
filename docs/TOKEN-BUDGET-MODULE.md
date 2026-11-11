@@ -1,6 +1,6 @@
-# Token 额度与花费（移植自 SurfCore）
+# Token 额度与花费（移植自 DSBot）
 
-> 2026-11-03 迁移到 Aurabot 后补齐：SurfCore 的「Token 额度 + 花费统计」以**用户模块**形式移植回来，升级 Aurabot 不会覆盖。
+> 2026-11-03 迁移到 Aurabot 后补齐：DSBot 的「Token 额度 + 花费统计」以**用户模块**形式移植回来，升级 Aurabot 不会覆盖。
 
 ## 位置
 
@@ -13,17 +13,17 @@
 
 本机 `$DSH_HOME` = `/home/ubuntu/dsh-agentchat/dsh-0.2-home`。
 
-## 计量口径（与 SurfCore 对齐）
+## 计量口径（与 DSBot 对齐）
 
 - **数据源**：DSH 的 `session/event` 事件里 `assistant/message` 携带的 `usage`（不是估算）。
 - **四桶**：`inputTokens`（未命中）/ `cacheReadTokens`（命中）/ `cacheWriteTokens` / `outputTokens` 分别计价，另记 reasoning。
   唯一模型来自 DSH 事件里 `message.source.provider/model`。
-- **价目表**：`prices.mjs` 从 SurfCore `src/model-prices.js` **原样移植**（MIT）：deepseek-flash / v4-flash / v4-pro 等；未知模型按 flash 价并标估算。
-- **峰谷**：工作日 9–12、14–18 点为高峰（×2），其余时段与法定节假日 ×1（节假日表同 SurfCore）。
+- **价目表**：`prices.mjs` 从 DSBot `src/model-prices.js` **原样移植**（MIT）：deepseek-flash / v4-flash / v4-pro 等；未知模型按 flash 价并标估算。
+- **峰谷**：工作日 9–12、14–18 点为高峰（×2），其余时段与法定节假日 ×1（节假日表同 DSBot）。
 - **分类**：
   - `QQ`：Aurabot 工作区里的 `private:*` / `group:*` 会话（按 Aurabot 自己的 chat→session 映射识别）；
   - `其他`：Aurabot 自己的后台会话（`agentPreset` 以 `aurabot-` 开头，如空间日记/后台想事情）；
-  - **面板/GUI/子代理等别的 DSH 会话不计入**（与 SurfCore 的「其他」口径一致，避免你写代码的用量把 QQ 额度顶掉）。
+  - **面板/GUI/子代理等别的 DSH 会话不计入**（与 DSBot 的「其他」口径一致，避免你写代码的用量把 QQ 额度顶掉）。
 - **幂等**：同一 `session|turn|step` 的重试只记增量，不重复累加。
 
 ## 额度与闸门
@@ -56,12 +56,12 @@
 curl -s http://127.0.0.1:3102/aurabot/api/ext/token-budget/state | python3 -m json.tool | head -40
 ```
 
-## 与 SurfCore 原实现的差异（有意为之）
+## 与 DSBot 原实现的差异（有意为之）
 
-1. **没有「唤醒闸门」**：SurfCore 是桥接主动唤醒模型，额度 100% 时停唤醒；Aurabot 是推送式，所以改成「超额度就不回消息」。
-2. **额度单位只有人民币**：SurfCore 支持 `¥8` / `8M` 双单位；这里只做人民币（要 token 数单位可再加）。
-3. **分类口径**：只统计 Aurabot 自己的会话；GUI/子代理不计（SurfCore 的「其他」也只算它自己触发的用量）。
-4. 没有 SurfCore 的「逐轮明细 CSV/图表/价目表自定义」——有需要可以在这个模块里继续加（`panel.js` + `index.mjs` 都在数据目录，改完几秒热重载）。
+1. **没有「唤醒闸门」**：DSBot 是桥接主动唤醒模型，额度 100% 时停唤醒；Aurabot 是推送式，所以改成「超额度就不回消息」。
+2. **额度单位只有人民币**：DSBot 支持 `¥8` / `8M` 双单位；这里只做人民币（要 token 数单位可再加）。
+3. **分类口径**：只统计 Aurabot 自己的会话；GUI/子代理不计（DSBot 的「其他」也只算它自己触发的用量）。
+4. 没有 DSBot 的「逐轮明细 CSV/图表/价目表自定义」——有需要可以在这个模块里继续加（`panel.js` + `index.mjs` 都在数据目录，改完几秒热重载）。
 
 ## 升级 / 停用 / 回滚
 

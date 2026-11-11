@@ -14,7 +14,7 @@
  * 最后用 `node --check` 校验 client.js；仍不通过会明确报错。
  *
  * 用法：
- *   node tools/repair-skeleton.mjs --pkg surfcore-qq
+ *   node tools/repair-skeleton.mjs --pkg dsbot-qq
  *   node tools/repair-skeleton.mjs --all
  */
 import fs from 'node:fs';

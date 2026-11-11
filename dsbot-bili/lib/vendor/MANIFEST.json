@@ -1,0 +1,476 @@
+{
+  "generator": "插件/tools/vendor.mjs",
+  "generatedAt": "2026-11-03T04:15:02.739Z",
+  "sourceRoot": "<老仓库>",
+  "roots": [
+    "plugins/<合体插件>/lib/scheduler.js",
+    "plugins/<合体插件>/lib/automation.js",
+    "plugins/<合体插件>/lib/bili-qr-login.mjs",
+    "plugins/<合体插件>/lib/memory-card.js",
+    "plugins/<合体插件>/lib/persona.js",
+    "plugins/<合体插件>/lib/store.js",
+    "plugins/<合体插件>/lib/paths.js",
+    "plugins/<合体插件>/lib/http-guard.js",
+    "plugins/<合体插件>/lib/bridge.js"
+  ],
+  "copyDirs": [
+    "plugins/<合体插件>/tools"
+  ],
+  "files": [
+    {
+      "rel": "plugins/<合体插件>/lib/automation.js",
+      "bytes": 6020,
+      "sha256": "4c40546af45a257496b4a9f97ca4316c9e52836f8609666e704c44ee4b5b2e74"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/bili-qr-login.mjs",
+      "bytes": 18906,
+      "sha256": "85a2598cc10e5747238bc79fbe7dccfeaf82a7e194b8a2bedb509d6da9e9cb4a"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/bridge.js",
+      "bytes": 11072,
+      "sha256": "854f7b471bac49b7dbac1a19d82a8cd2f4f844e4fc5b523be1ebb8c5858e6739"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/http-guard.js",
+      "bytes": 5736,
+      "sha256": "83d2acbd47a429bc91ce13746d33a61a1b64e22ffa1791e5751a1e073d984d61"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/memory-card.js",
+      "bytes": 21742,
+      "sha256": "bb8089d6635c54a810290fa6cb093177f946d9a93f35591b168da324a8624e74"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/paths.js",
+      "bytes": 6295,
+      "sha256": "cdbf74c9ecb8265b97741051c89bc1330c7d42281a652a07480d481795d1ea7d"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/persona.js",
+      "bytes": 1896,
+      "sha256": "a48ef4b5bea5b77ac7babd293d321190b9651c8de0b1d51467c34daeea19a8dc"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/scheduler.js",
+      "bytes": 70750,
+      "sha256": "7ab79286b27720022cbc61b9144159675dfe983422474c0e63c342234fc7d501"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/store.js",
+      "bytes": 26982,
+      "sha256": "f476f5ef633384fee50cc53a1bc66ce2cb2558687cc73840f7d9e9a37f0c5e05"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/bili.mjs",
+      "bytes": 7720,
+      "sha256": "5a35cdd72c3754e3f84a8c45d1e5623ae6e5315ce34f36ba06bf0b02c5e3a59b"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/attack.mjs",
+      "bytes": 5359,
+      "sha256": "61a613dd30967815749eb051ebba7bae051ad2fd81174a73ee18b3fcd14d4796"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/bili-watch.mjs",
+      "bytes": 8670,
+      "sha256": "bedc1d7b2c0147d8dd20da916a4ab1743ecf8ab7db3242ee5ff4653a2bc324ce"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/comment-await.mjs",
+      "bytes": 6769,
+      "sha256": "590f39f0dcd86d84f0f0c37d86468639c17562c086b480609661938d7a6d0d81"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/comment-del.mjs",
+      "bytes": 2295,
+      "sha256": "963aa56cd07940238ed3b2ce60f5af82af649ee8d54dafa087291c3f61965053"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/comment-digest.mjs",
+      "bytes": 4588,
+      "sha256": "ffc036e5f2bf13e5d09f9a3e64efbbbcc831800ad5cc534d911e1f6cb6249e06"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/comment.mjs",
+      "bytes": 31065,
+      "sha256": "c3cd50fb4b2613e261647c2c5920fcbcc8b8b7caa6f3b9723ca0e3ae9427f9d1"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/daily.mjs",
+      "bytes": 19718,
+      "sha256": "0e1647424ab347f0ddb0ff468b7c78ab809a43ce78daa859a8540d156a6511e2"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/danmaku-await.mjs",
+      "bytes": 21200,
+      "sha256": "0e01212945c5ebd5cac32b18e4c6aaa0d6eebb19dab195a501797b48fae7858c"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/danmaku.mjs",
+      "bytes": 12951,
+      "sha256": "693b0d48e4ce612601beed88c9a3568ba53c5a2d6d0ad95354b9b4b7af77cd7f"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/debrief.mjs",
+      "bytes": 19007,
+      "sha256": "32ed5009d1de905dfed3bb81d00698f9f00caa8d012c85c896e41bca7275c0fa"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/deps.mjs",
+      "bytes": 3589,
+      "sha256": "0b535a8226c9ef6d08250f9c0e96e94ecaf1a03a90322329cca8a52b016a51ea"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/diary.mjs",
+      "bytes": 6156,
+      "sha256": "755f658b341df2d328cb9b4b890fa7bf18791be12324793580c40d97221b2b6f"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/dm-await.mjs",
+      "bytes": 7417,
+      "sha256": "71a9c55ae623296ee0da0b2fb4121e101a2cb2b8ec45894a9df0209aa49d3d25"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/dm.mjs",
+      "bytes": 15548,
+      "sha256": "084df8efc659ce807ddfec3776260aeef7677d3239c3a43f865f7f6ea8358b7d"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/dynamic-image.mjs",
+      "bytes": 8923,
+      "sha256": "ca409aa0f6ebdcd412b6aacf34826a419bb2bd808ef4cf190bbb1936cde9b0d9"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/dynamic.mjs",
+      "bytes": 8857,
+      "sha256": "e1a7b9bea469ed5fd2f4919a95a3932db1916bca9d5db18bb009de17c02a7fee"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/edit-dynamic.mjs",
+      "bytes": 3389,
+      "sha256": "5ef0baf114a9d5880817993ee07dbbadfc0f60f05db59c2ae1d5149b7999e3d3"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/fav.mjs",
+      "bytes": 8561,
+      "sha256": "aba8502e3f28ea999b5c54a0ff79b89954f823e7e7269a3bc68e1c665f5153c9"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/feed.mjs",
+      "bytes": 17354,
+      "sha256": "f2593fa5761246a50c66cbd4e3a611f0e9f36fbc7213c6cfcf0e1e8456a39e23"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/fish-guard.mjs",
+      "bytes": 5896,
+      "sha256": "ebbb8c98576bcf761b792de861d62326b9dab0b988ad721e0b372d7b7c8c54e4"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/gamefeed.mjs",
+      "bytes": 8932,
+      "sha256": "adc87fdb65bc8ab03028459f4445886a19235df8b7b2b1258735d6d991b2297a"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/likes.mjs",
+      "bytes": 3737,
+      "sha256": "b551adc9495ac47b93b8d0d3ca915002195a07058dde1c85ac219372df105b4d"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/notify.mjs",
+      "bytes": 9059,
+      "sha256": "1d69f02d1f39ac81e37e5173a10cdc5679722d102ab46eb292f96aa5ece004c5"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/prefs.mjs",
+      "bytes": 3059,
+      "sha256": "4fd409588372f475ef6edafa9b58165c975638f5e4c2a0da1f92fef614ae9b1b"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/quota.mjs",
+      "bytes": 21691,
+      "sha256": "68505bbb62c4f60a869e229b7597981cca9ab617da636b30c4297b864bf3a772"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/reply-draft.mjs",
+      "bytes": 5929,
+      "sha256": "add5fdfd11884ee929a97ca37bf927574e29d67358a994915d042cb016b784c7"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/score.mjs",
+      "bytes": 2270,
+      "sha256": "d841b4208059662b2db656640eefc1dda08face3714726153ffac15317a08bca"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/search.mjs",
+      "bytes": 2878,
+      "sha256": "f65d032bb8ec8b3210cf17137a95c9d25e35fe907d764e803d5e2618d678bef9"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/selftest.mjs",
+      "bytes": 5524,
+      "sha256": "fc794a2f9b622b4f61dd7c82fd61ee8ca96d727f372fd83b262a9527d4f9edf6"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/share-dynamic.mjs",
+      "bytes": 8974,
+      "sha256": "8ca0e362a46cc94d138f411926903aac8bf78cf8582c22a426d9459513443d65"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/subtitles.mjs",
+      "bytes": 6665,
+      "sha256": "d2cad7cf158dd553c60d8fb21c02159f645802b6528c41453ad29516c24bcd19"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/video-content.mjs",
+      "bytes": 5439,
+      "sha256": "b391b298ab79649ab9c97e1d2f77fe6492fa546bdc04fdb6107836c9ca8383b9"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/watch-history.mjs",
+      "bytes": 3422,
+      "sha256": "52fbd2953b6ac2dcbe41e515fc33ec951ba50520ab3c2a95176134e725e26562"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/commands/whale-night.mjs",
+      "bytes": 13119,
+      "sha256": "5e9ab08cc203f7c4d3eb4a1826a27401aefc85566ea5cfe7068969fb749f90ae"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/diagnostics/fetch-covers.mjs",
+      "bytes": 1825,
+      "sha256": "56aa3339998f473296a95dc9a779f03613efcf8a1a0cc8d1bd1b1cd5dfc3288e"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/diagnostics/whois.mjs",
+      "bytes": 1824,
+      "sha256": "cbc5038e6308e29c7f6f13b29898dc6ef4604c47bb6e8bb556c9c4cbff352c6f"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/docs/comment-add.md",
+      "bytes": 25441,
+      "sha256": "c7e28ad87b3399fe7332cbeb15270000ae9a97661f9fd0ac8dbedd2ff0608818"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/docs/dynamic-action.md",
+      "bytes": 8852,
+      "sha256": "3ddcb2fc7e28a87c8aa2d4e5c514f22fbd1392dfd527f287271b354ea5abbe47"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/docs/dynamic-publish.md",
+      "bytes": 16892,
+      "sha256": "4069101e5178a79dc65df69ee1d7852667b0e3940ae9229d1a01484dccb4b329"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/docs/live-danmaku.md",
+      "bytes": 50033,
+      "sha256": "afb96328b5673189d28411a498f686205f0bb8636e76964baeb27bbed89bd2cd"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/docs/live-room-info.md",
+      "bytes": 44353,
+      "sha256": "34e881c1abd3cb22740c0fd4002e7bffd561267551c1ddec6f25ab61bb773c17"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/docs/rich-text-nodes.md",
+      "bytes": 11142,
+      "sha256": "f0e11d25fa63d76096416c5d24d14faf757e23fc10f063f00695ac3b9dee6704"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/attacks.mjs",
+      "bytes": 3456,
+      "sha256": "c6549e5f6eb85b76d297de08fff99ffde6caacab30b4319831b342af3a772581"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/config.mjs",
+      "bytes": 5277,
+      "sha256": "06d33d5b7b51000a4ee628662c2acff01a2eb44a90ce0238df9db0cb06bc1045"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/feed-core.mjs",
+      "bytes": 16598,
+      "sha256": "c3cac851f1723ab53e2b645daef6c93defe263bd3daa5b3659947477031c6f03"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/ffmpeg.mjs",
+      "bytes": 3107,
+      "sha256": "17d06d77f301db715a96264077d651301ca85ad1a7d49834cb51572c14857d3f"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/fish-guard.mjs",
+      "bytes": 31796,
+      "sha256": "7f19513e33987606add2bf309fb295908990cefefc50ec97fe8559d248ba20e4"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/forward.mjs",
+      "bytes": 4031,
+      "sha256": "65ce3102e54133770425d43eb1efeac738c08cb3b55be20696cf929a925cd27a"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/free-gate.mjs",
+      "bytes": 8079,
+      "sha256": "bbdc70bddb16e432240b30447c009f9e918e096772a88c1db4c973815fc4a8f9"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/games.mjs",
+      "bytes": 1702,
+      "sha256": "e1265ac0ce2843f2084332893ed8fa0319a76bf40d737992645faba7947ce8b6"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/kind-signals.mjs",
+      "bytes": 1706,
+      "sha256": "294e88412695c4c7e402d79240a06105647ee727f46e77167bd88d682aa9d277"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/kinds.mjs",
+      "bytes": 6522,
+      "sha256": "c5a9ce58cbdc5a54c4509d6e06dc82814d84fd5357d80c8d7cee749419856fb4"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/limits.mjs",
+      "bytes": 2568,
+      "sha256": "c093550262cfff674fedddb77b6a3a7a99c311ca59a2e9404acbbe922280e70e"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/msgfeed.mjs",
+      "bytes": 5206,
+      "sha256": "4ca582cbdd8c2208730a376c8196d8e1d744a263106a655d4f60e8cedde9ea88"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/my-dynamics.mjs",
+      "bytes": 5526,
+      "sha256": "a2e8cbff07b95732d72e63665e5c093cef4797fc14459f613957f7a55ae15479"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/night-schedule.mjs",
+      "bytes": 8988,
+      "sha256": "0b7554f9c044f5e7bc9e086a8a3cd90a32ca88223f017681931de2091c303c52"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/outbound-guard.mjs",
+      "bytes": 3204,
+      "sha256": "3d745ed01705f8434cb51e3b665161ae99a078019518dbb34c155d65003bf110"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/pins.mjs",
+      "bytes": 2322,
+      "sha256": "000fe32c911bea10fdfbd96d6da8952e69c241fa747c83d644e7a4f08bf2f381"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/pref-scan.mjs",
+      "bytes": 26144,
+      "sha256": "cbe760ae5127e95af087d60b0c9fc2188e606dd57fabdeca3d02820e7afd4098"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/quota-gate.mjs",
+      "bytes": 1604,
+      "sha256": "74022e2360b103cbcbea01f95493a6ca2653523d4643e372b0f15497d6a63648"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/scores.mjs",
+      "bytes": 2274,
+      "sha256": "36b50a7703badc18080bcc10a773c1bba86b7484ede65e5667cf3eab81416d50"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/share-dynamic.mjs",
+      "bytes": 2002,
+      "sha256": "63b7d2c81c0beea57b44012f89e9d6a518076b649c1f64fe09b7da1bfa5184d1"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/state-paths.mjs",
+      "bytes": 2428,
+      "sha256": "3537a00f68486e68295269123e22a0852e9aa7c79c57a2b10b84772adecb4b97"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/watch-actions.mjs",
+      "bytes": 7118,
+      "sha256": "150b2c9c317b1dd5fe3824b4326c42e2df808f7c6caf3b1786b0c186d15e3123"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/watch-history.mjs",
+      "bytes": 10483,
+      "sha256": "d41cbc005385d6337cc63b230011bd22a34f7cca83591015c1c0b6a2e7901fd0"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/templates/config.example.json",
+      "bytes": 3532,
+      "sha256": "f008235624912a47245536cc2268df71f245541e9457d7db0393f6e6301f702d"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/comment-exists.mjs",
+      "bytes": 6096,
+      "sha256": "4a9c6bc1adafd2cd461bb7eb575ac70a160eaace96a615cf8b57c539500f3990"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/dryrun.mjs",
+      "bytes": 3804,
+      "sha256": "035231657bd4a81c4b3adcbfde4167e31cf735934e896ba97ed464acf8529e0b"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/dynamic-inspect.mjs",
+      "bytes": 2362,
+      "sha256": "e9d0c46dbb6a8db003a3f6b17f88069577ffd803c7ce8e38b407d084d2b74b8e"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/mention-check.mjs",
+      "bytes": 1482,
+      "sha256": "f6117f845107d939798ad3b71949b6837c5d86320f888706f72218b59cd406f9"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/session.mjs",
+      "bytes": 1840,
+      "sha256": "1f819fbfa428f2b805595e4ef1043fdf51dbe6cd31bb814d4c490dbe9310f613"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/thread.mjs",
+      "bytes": 2235,
+      "sha256": "c66c33b72633546b2eeb0160eb18b4e12c4d84bb8b7450e8d5ed3717f5791d01"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/verify-reply.mjs",
+      "bytes": 2951,
+      "sha256": "cf8eb14ccecb9b4ce8b1a218666a1f6130757e90866c0223e86d0a9c9c05b800"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/verify/watch-replies.mjs",
+      "bytes": 3681,
+      "sha256": "61265cdfe9e6fa91bf617d10cb9c248ebd1f45bd9a6b200454e265e990db7078"
+    },
+    {
+      "rel": "src/admin-identity.js",
+      "bytes": 12866,
+      "sha256": "8b9f7bba388db449dff1a6a2322ca2ecc6cbf247cc98d6c1a5034f3cd4acb70f"
+    },
+    {
+      "rel": "src/character-persona.js",
+      "bytes": 27107,
+      "sha256": "aedfc943807f8d355a87ff2e3f8ffc72ddddb77bfac2f48e21d4ccc7e8eb6f32"
+    },
+    {
+      "rel": "src/fish-guard.js",
+      "bytes": 13233,
+      "sha256": "07523b5dfd17640b49e39d2b3c591c7364fe1a70a25e939fe7951c3144573d75"
+    },
+    {
+      "rel": "src/identity-guard.js",
+      "bytes": 3399,
+      "sha256": "02d09b24d16ece535e02ec1cbfd21b258618cf734c22e2e9e0197462eacdce91"
+    },
+    {
+      "rel": "src/memory-card.js",
+      "bytes": 90315,
+      "sha256": "6f1d5d1239f78f4615353481da03daceae633f33cef7e342332bdcbc53a464e2"
+    },
+    {
+      "rel": "src/self-identity.js",
+      "bytes": 9877,
+      "sha256": "dce862bb19c5e983cfc61af34262d9f18eba2d53e3f3f2253f057879cb2172b8"
+    },
+    {
+      "rel": "src/share-mode.js",
+      "bytes": 1853,
+      "sha256": "70bf32a8d8d1423dd3e9386df34d8d787f89307fb9af89dcf7d086c94c67dd72"
+    }
+  ]
+}

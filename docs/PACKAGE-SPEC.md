@@ -9,22 +9,22 @@
 
 ```bash
 cd 插件
-node tools/new-plugin.mjs --name surfcore-qq --title "SurfCore · QQ" \
-     --prefix /dsh-surfcore-qq/api --order 8 --color 12a8ff --desc "..."
+node tools/new-plugin.mjs --name dsbot-qq --title "DSBot · QQ" \
+     --prefix /dsh-dsbot-qq/api --order 8 --color 12a8ff --desc "..."
 ```
 
 生成后进入该包，把 `PLAN.md` 里列的旧模块 vendor 进来：
 
 ```bash
-node ../tools/vendor.mjs --pkg surfcore-qq --roots plugins/surfcore/lib/bridge.js,plugins/surfcore/lib/qq-mode.js,...
+node ../tools/vendor.mjs --pkg dsbot-qq --roots plugins/‹合体插件›/lib/bridge.js,plugins/‹合体插件›/lib/qq-mode.js,...
 ```
 
 `vendor` 会**保持仓库相对结构**复制到 `lib/vendor/`，所以旧文件内部的相对 import 一行都不用改。
 包内引用方式：
 
 ```js
-import { restart as restartBridge } from './vendor/plugins/surfcore/lib/bridge.js';
-import { STATE_DIR } from './vendor/plugins/surfcore/lib/paths.js';
+import { restart as restartBridge } from './vendor/plugins/‹合体插件›/lib/bridge.js';
+import { STATE_DIR } from './vendor/plugins/‹合体插件›/lib/paths.js';
 import { adminFromSources } from './vendor/src/admin-identity.js';
 ```
 
@@ -34,7 +34,7 @@ import { adminFromSources } from './vendor/src/admin-identity.js';
 
 ## 1. 宿主半边（lib/index.js）移植步骤
 
-旧插件所有业务都在一个 `apply(ctx)` 里（`plugins/surfcore/lib/index.js`），拆的时候是「剪切+接线」：
+旧插件所有业务都在一个 `apply(ctx)` 里（`plugins/‹合体插件›/lib/index.js`），拆的时候是「剪切+接线」：
 
 1. **建服务**：把本包需要的 `createXxxService(...)` 调用搬过来。
    - 依赖旧闭包的参数（`pluginLog`、`readUnified`、`ctx`）换成包内实现：
@@ -50,7 +50,7 @@ import { adminFromSources } from './vendor/src/admin-identity.js';
    - 在 `ctx.effect(() => () => { ... })` 里清掉；
    - 对「旧插件全局开关」的依赖改成读配置里的同一个键。
 5. **跨包依赖一律降级为文件/HTTP**（见架构文档 §4.2）。例如：
-   - token 额度闸门：不要拿 `tokenBudget` 服务，改成读 `~/.dsh/surfcore/token-usage-daily.json` 快照；
+   - token 额度闸门：不要拿 `tokenBudget` 服务，改成读 `~/.dsh/dsbot/token-usage-daily.json` 快照；
      读不到 = 不拦（fail-open），并在 `status` 接口里注明 `tokenGate: 'unavailable'`。
    - 记忆卡注入块：不要调 memory 包，直接读 `memory/memory-card-prompt-<platform>.md`。
    - 人格卡：直接读 `characters/current-role.json` + `persona.md`（可用 vendored `character-persona.js`）。
@@ -63,7 +63,7 @@ import { adminFromSources } from './vendor/src/admin-identity.js';
 
 ## 2. 浏览器半边（lib/client.js）移植步骤
 
-旧 `plugins/surfcore/lib/client.js` 是一个大组件 `QQBIliWhaleSection`，内部按标签页分成多个
+旧 `plugins/‹合体插件›/lib/client.js` 是一个大组件 `QQBIliWhaleSection`，内部按标签页分成多个
 `XxxTab` 函数组件，共享统一状态（`unified/qq/bili/busy/toast`）。拆法：
 
 1. 脚手架已内联公共 UI 套件（`templates/client-kit.js` 的内容）。
@@ -72,17 +72,17 @@ import { adminFromSources } from './vendor/src/admin-identity.js';
    - 旧：`({ cfg, set, unified, setUnified, busy, setBusy, toast, reload, overview, goTab })`
    - 新：本组件自己 `useState` + `reload()`，数据从本包 `API` 取。
    - 「跳转其它标签页」的 `goTab(...)` 在拆分后跨包不可用：改成一句提示文案
-     （例如「到「SurfCore · 记忆」栏目查看」）。
+     （例如「到「DSBot · 记忆」栏目查看」）。
 4. 数据接口改成 `api("/xxx")` 指向本包前缀；**字段路径保持不变**（仍是 `qq.socialV2.xxx` 这种），
    这样状态与旧配置完全兼容。
 5. 多标签页的包（bili/memory/pet/core）在栏目内部自己做一个小 `TABS` + `renderTab()`，
    沿用旧组件顶部的 `qbw-tabs` 样式即可。
 6. 栏目内 `useStyleOnce()` 会注入本包的 `CSS_TAG`；CSS 内容照抄旧 `CSS` 常量（同一套 `qbw-*` 类）。
-7. 删除对旧全局的依赖：`window.__surfcoreToast`（如需 toast 用本地 `toast()`）、
+7. 删除对旧全局的依赖：`window.__dsbotToast`（如需 toast 用本地 `toast()`）、
    `overview`/`goTab` 之类的跨标签状态。
 
 > 旧组件之间的复用（如 `AdminCard` 同时出现在 QQ/B站 页）在拆分后按「归属包」放置；
-> 其它包只**只读展示**，不再提供编辑入口（管理员身份唯一编辑入口在 `surfcore-core`）。
+> 其它包只**只读展示**，不再提供编辑入口（管理员身份唯一编辑入口在 `dsbot-core`）。
 
 ---
 
@@ -112,7 +112,7 @@ import { adminFromSources } from './vendor/src/admin-identity.js';
 跑：
 
 ```bash
-cd 插件/surfcore-xxx && node scripts/test-smoke.mjs
+cd 插件/dsbot-xxx && node scripts/test-smoke.mjs
 cd 插件 && node tools/verify-all.mjs          # 全量：体检 + 所有包的冒烟
 ```
 
@@ -139,7 +139,7 @@ cd 插件 && node tools/verify-all.mjs          # 全量：体检 + 所有包的
 node ../tools/vendor.mjs --pkg . --roots <...> --check   # vendor 与旧仓库一致
 node scripts/test-smoke.mjs                              # 冒烟通过
 node ../tools/verify-all.mjs                             # 全套通过
-grep -rn "\.\./\.\./\.\./src\|from 'surfcore'\|require('surfcore')" lib/  # 应为空
+grep -rn "\.\./\.\./\.\./src\|from 'dsbot'\|require('dsbot')" lib/  # 应为空
 ```
 
 再把 `README.md` 的「负责/不负责」和 `PLAN.md` 的完成状态更新一下。

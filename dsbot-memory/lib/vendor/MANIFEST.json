@@ -1,0 +1,107 @@
+{
+  "generator": "插件/tools/vendor.mjs",
+  "generatedAt": "2026-11-03T04:20:54.094Z",
+  "sourceRoot": "<老仓库>",
+  "roots": [
+    "plugins/<合体插件>/lib/memory.js",
+    "plugins/<合体插件>/lib/memory-card.js",
+    "plugins/<合体插件>/lib/align.js",
+    "plugins/<合体插件>/lib/privacy.js",
+    "plugins/<合体插件>/lib/store.js",
+    "plugins/<合体插件>/lib/paths.js",
+    "plugins/<合体插件>/lib/http-guard.js"
+  ],
+  "copyDirs": [],
+  "files": [
+    {
+      "rel": "plugins/<合体插件>/lib/align.js",
+      "bytes": 23789,
+      "sha256": "4ec296f11e3d82cd74eb36c471b7f3f81a52d7b7d3d622e2f7c7a78c27917456"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/http-guard.js",
+      "bytes": 5736,
+      "sha256": "83d2acbd47a429bc91ce13746d33a61a1b64e22ffa1791e5751a1e073d984d61"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/memory-card.js",
+      "bytes": 21742,
+      "sha256": "bb8089d6635c54a810290fa6cb093177f946d9a93f35591b168da324a8624e74"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/memory.js",
+      "bytes": 22015,
+      "sha256": "ac0631e714a614d5b4f8d6fdae3a94b4b89163cbe078f98d0506f1ed5b85ebeb"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/paths.js",
+      "bytes": 6295,
+      "sha256": "cdbf74c9ecb8265b97741051c89bc1330c7d42281a652a07480d481795d1ea7d"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/privacy.js",
+      "bytes": 9898,
+      "sha256": "4d982476df0b104e4ef9884f1bcae121795dcf4bdca7a288788ed0ee16c880d8"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/store.js",
+      "bytes": 26982,
+      "sha256": "f476f5ef633384fee50cc53a1bc66ce2cb2558687cc73840f7d9e9a37f0c5e05"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/config.mjs",
+      "bytes": 5277,
+      "sha256": "06d33d5b7b51000a4ee628662c2acff01a2eb44a90ce0238df9db0cb06bc1045"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/fish-guard.mjs",
+      "bytes": 31796,
+      "sha256": "7f19513e33987606add2bf309fb295908990cefefc50ec97fe8559d248ba20e4"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/kinds.mjs",
+      "bytes": 6522,
+      "sha256": "c5a9ce58cbdc5a54c4509d6e06dc82814d84fd5357d80c8d7cee749419856fb4"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/limits.mjs",
+      "bytes": 2568,
+      "sha256": "c093550262cfff674fedddb77b6a3a7a99c311ca59a2e9404acbbe922280e70e"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/msgfeed.mjs",
+      "bytes": 5206,
+      "sha256": "4ca582cbdd8c2208730a376c8196d8e1d744a263106a655d4f60e8cedde9ea88"
+    },
+    {
+      "rel": "plugins/<合体插件>/tools/lib/state-paths.mjs",
+      "bytes": 2428,
+      "sha256": "3537a00f68486e68295269123e22a0852e9aa7c79c57a2b10b84772adecb4b97"
+    },
+    {
+      "rel": "src/admin-identity.js",
+      "bytes": 12866,
+      "sha256": "8b9f7bba388db449dff1a6a2322ca2ecc6cbf247cc98d6c1a5034f3cd4acb70f"
+    },
+    {
+      "rel": "src/character-persona.js",
+      "bytes": 27107,
+      "sha256": "aedfc943807f8d355a87ff2e3f8ffc72ddddb77bfac2f48e21d4ccc7e8eb6f32"
+    },
+    {
+      "rel": "src/fish-guard.js",
+      "bytes": 13233,
+      "sha256": "07523b5dfd17640b49e39d2b3c591c7364fe1a70a25e939fe7951c3144573d75"
+    },
+    {
+      "rel": "src/memory-card.js",
+      "bytes": 90315,
+      "sha256": "6f1d5d1239f78f4615353481da03daceae633f33cef7e342332bdcbc53a464e2"
+    },
+    {
+      "rel": "src/share-mode.js",
+      "bytes": 1853,
+      "sha256": "70bf32a8d8d1423dd3e9386df34d8d787f89307fb9af89dcf7d086c94c67dd72"
+    }
+  ]
+}

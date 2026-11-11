@@ -1,0 +1,37 @@
+{
+  "name": "dsbot-bili",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "B站生物钟、账号扫码、养鱼参数、观看历史、定时分享与动态",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "scripts": {
+    "test": "node scripts/test-smoke.mjs",
+    "test:vendor": "echo \"先按 PLAN.md 跑 tools/vendor.mjs，再把 roots 填进 package.json 的这个脚本\""
+  },
+  "files": [
+    "lib",
+    "locale",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml"
+      ]
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  },
+  "license": "MIT"
+}

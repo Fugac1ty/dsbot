@@ -15,8 +15,8 @@
  *   README.md               这个包负责什么、怎么测、依赖哪些数据文件
  *
  * 用法：
- *   node tools/new-plugin.mjs --name surfcore-qq --title "SurfCore · QQ" \
- *        --prefix /dsh-surfcore-qq/api --order 8 --color 12a8ff \
+ *   node tools/new-plugin.mjs --name dsbot-qq --title "DSBot · QQ" \
+ *        --prefix /dsh-dsbot-qq/api --order 8 --color 12a8ff \
  *        --desc "QQ 桥接控制、白名单、SnowLuma 与 QQ 参数"
  */
 import fs from 'node:fs';
@@ -74,10 +74,10 @@ function packageJson({ name, desc }) {
 }
 
 const cordisPatch = ({ name }) => `# ============================================================================
-# ${name} —— 由旧单体插件 surfcore 拆出的独立 bundle
+# ${name} —— 由旧单体插件 dsbot 拆出的独立 bundle
 # ============================================================================
 # 只插入一行：id 必须等于包名（设置页 / 插件详情按包名找宿主入口）。
-# ⚠️ 与旧 surfcore 同时安装时不会冲突：行 id / 路由前缀 / 设置栏目 id 都不同。
+# ⚠️ 与旧 dsbot 同时安装时不会冲突：行 id / 路由前缀 / 设置栏目 id 都不同。
 # ============================================================================
 - insert:
     - id: ${name}
@@ -85,7 +85,7 @@ const cordisPatch = ({ name }) => `# ===========================================
       config: {}
 `;
 
-const iconSvg = ({ color }) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="SurfCore module">
+const iconSvg = ({ color }) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="DSBot module">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#${color}" stop-opacity="0.95"/>
@@ -106,14 +106,14 @@ const bootstrapJs = `/**
  * 运行根探测 —— **必须是 lib/index.js 的第一个 import**。
  *
  * 为什么需要它：vendored 模块按「仓库相对结构」原样复制（见 tools/vendor.mjs），
- * 它们在 import 时就会解析路径；而 vendored paths.js 需要知道旧 surfcore 仓库根
+ * 它们在 import 时就会解析路径；而 vendored paths.js 需要知道旧 dsbot 仓库根
  * （QQ 的 config.json 与 src/bridge.js 在那里）。ESM 按 import 声明顺序求值，
- * 所以只要本文件排在前面，先设好 SURFCORE_ROOT，后面的一切路径就都对了。
+ * 所以只要本文件排在前面，先设好 DSBOT_ROOT，后面的一切路径就都对了。
  *
  * 解析顺序（第一个探针通过者胜出）：
- *   1. 环境变量 SURFCORE_ROOT / SURFCORE_QQBOT_ROOT（部署时可显式指定）
- *   2. <插件工作区>/surfcore（本仓库布局：插件/<pkg> → ../surfcore）
- *   3. <插件工作区>（旧布局：插件目录直接放在 surfcore 旁边）
+ *   1. 环境变量 DSBOT_ROOT / DSBOT_QQBOT_ROOT（部署时可显式指定）
+ *   2. <插件工作区>/dsbot（本仓库布局：插件/<pkg> → ../dsbot）
+ *   3. <插件工作区>（旧布局：插件目录直接放在 dsbot 旁边）
  *   4. 当前工作目录 / 其父目录
  * 探针 = 同时存在 config.json 与 src/bridge.js。
  */
@@ -124,7 +124,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PKG_ROOT = path.resolve(HERE, '..');
 
-function looksLikeSurfcoreRoot(dir) {
+function looksLikeDsbotRoot(dir) {
   try {
     return Boolean(dir)
       && fs.existsSync(path.join(dir, 'config.json'))
@@ -134,29 +134,45 @@ function looksLikeSurfcoreRoot(dir) {
   }
 }
 
+/**
+ * 在包的祖父目录下扫一遍：任何同时含 config.json 与 src/bridge.js 的兄弟目录，
+ * 都当作运行根（QQ 桥接进程和 QQ 配置在那里）。不再依赖目录叫什么名字。
+ */
+function findRuntimeRoot() {
+  const grandparent = path.resolve(PKG_ROOT, '..', '..');
+  try {
+    for (const name of fs.readdirSync(grandparent)) {
+      const dir = path.join(grandparent, name);
+      if (dir === PKG_ROOT) continue;
+      if (looksLikeDsbotRoot(dir)) return dir;
+    }
+  } catch { /* 读不到就当没找到 */ }
+  return '';
+}
+
 const CANDIDATES = [
-  process.env.SURFCORE_ROOT,
-  process.env.SURFCORE_QQBOT_ROOT,
+  process.env.DSBOT_ROOT,
+  process.env.DSBOT_QQBOT_ROOT,
   process.env.QQBILI_QQBOT_ROOT,
-  path.resolve(PKG_ROOT, '..', '..', 'surfcore'),
+  findRuntimeRoot(),
   path.resolve(PKG_ROOT, '..', '..'),
   path.resolve(PKG_ROOT, '..', '..', '..'),
   process.cwd(),
   path.resolve(process.cwd(), '..'),
 ].filter(Boolean);
 
-const FOUND = CANDIDATES.find(looksLikeSurfcoreRoot);
-if (FOUND) process.env.SURFCORE_ROOT = FOUND;
+const FOUND = CANDIDATES.find(looksLikeDsbotRoot);
+if (FOUND) process.env.DSBOT_ROOT = FOUND;
 
-export const SURFCORE_ROOT = FOUND ?? '';
+export const DSBOT_ROOT = FOUND ?? '';
 export const PACKAGE_ROOT = PKG_ROOT;
 `;
 
 const configLockJs = `/**
  * 跨插件配置锁 + 原子写 + 备份（每个拆分包自带一份，协议相同）。
  *
- * 拆分后多个插件会读写同一批 JSON 文件（~/.dsh/surfcore/config.json、
- * <surfcore>/config.json、bili.config.json …）。协议只有三条：
+ * 拆分后多个插件会读写同一批 JSON 文件（~/.dsh/dsbot/config.json、
+ * <dsbot>/config.json、bili.config.json …）。协议只有三条：
  *
  *   1. **写前拿锁**：\`<STATE_DIR>/config.lock\` 目录（mkdir 是原子的）。
  *      锁内 <10s 未释放视为陈旧可抢占；拿不到锁最多等 10s 后报错（绝不静默丢写）。
@@ -169,7 +185,7 @@ const configLockJs = `/**
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { STATE_DIR, BACKUP_DIR, ensureDirs } from './vendor/plugins/surfcore/lib/paths.js';
+import { STATE_DIR, BACKUP_DIR, ensureDirs } from './vendor/plugins/dsbot/lib/paths.js';
 
 const LOCK_DIR = path.join(STATE_DIR, 'config.lock');
 const LOCK_WAIT_MS = 10_000;
@@ -280,19 +296,19 @@ function hostIndexJs({ name, prefix, desc }) {
   return `/**
  * ${name} —— ${desc}
  *
- * 由旧单体插件 surfcore 拆出的**独立、自包含**插件：只 import 包内文件与 Node 内置。
+ * 由旧单体插件 dsbot 拆出的**独立、自包含**插件：只 import 包内文件与 Node 内置。
  * 依赖的旧代码在 lib/vendor/（由 tools/vendor.mjs 按仓库相对结构原样复制）。
  *
  * 路由前缀：${prefix}
  * 设置栏目 id：${name}（浏览器半边见 lib/client.js）
  */
-import './bootstrap.js'; // 必须第一：先定好 SURFCORE_ROOT，vendored paths 才能解析
+import './bootstrap.js'; // 必须第一：先定好 DSBOT_ROOT，vendored paths 才能解析
 import fs from 'node:fs';
 import path from 'node:path';
 import {
   STATE_DIR, MEMORY_DIR, BACKUP_DIR, UNIFIED_FILE, QQ_CONFIG, BILI_CONFIG, ensureDirs, maskPath,
-} from './vendor/plugins/surfcore/lib/paths.js';
-import { json, readBody, isLoopbackReq, sameOrigin } from './vendor/plugins/surfcore/lib/http-guard.js';
+} from './vendor/plugins/dsbot/lib/paths.js';
+import { json, readBody, isLoopbackReq, sameOrigin } from './vendor/plugins/dsbot/lib/http-guard.js';
 import { readJson, updateJsonFile, backupFile } from './config-lock.js';
 
 export const name = '${name}';
@@ -441,7 +457,7 @@ ${kit}
 
       return h("div", { className: "qbw-app" },
         h("div", { className: "qbw-head" },
-          h("p", { className: "qbw-kicker" }, "SurfCore 拆分包"),
+          h("p", { className: "qbw-kicker" }, "DSBot 拆分包"),
           h("h2", { className: "qbw-title" }, "${title}"),
           h("p", { className: "qbw-sub" }, "独立插件：只负责本栏目；数据仍写原有的配置文件与状态目录。")),
         h("div", { className: "qbw-body" },
@@ -485,7 +501,7 @@ ${kit}
 }
 
 function camel(name) {
-  return name.replace(/[-/]+(.)/g, (_, c) => c.toUpperCase()).replace(/^surfcore/, 'surfcore');
+  return name.replace(/[-/]+(.)/g, (_, c) => c.toUpperCase()).replace(/^dsbot/, 'dsbot');
 }
 
 function smokeTest({ name, section, prefix }) {
@@ -547,7 +563,7 @@ function readme({ name, title, desc, prefix }) {
 
 ${desc}
 
-> 由旧单体插件 \`surfcore\` 拆出的**独立插件**。旧插件在拆分期间保持不动；
+> 由旧单体插件 \`dsbot\` 拆出的**独立插件**。旧插件在拆分期间保持不动；
 > 本包只依赖包内文件（\`lib/vendor/\` 是旧代码的原样副本），不 import 旧仓库任何路径。
 
 ## 这个包负责什么
@@ -573,7 +589,7 @@ ${desc}
 
 \`\`\`bash
 # 在本包目录
-node ../tools/vendor.mjs --pkg . --roots <逗号分隔的 surfcore 相对路径>
+node ../tools/vendor.mjs --pkg . --roots <逗号分隔的 dsbot 相对路径>
 node ../tools/vendor.mjs --pkg . --roots <...> --check   # 校验是否与旧仓库一致
 \`\`\`
 
@@ -585,22 +601,22 @@ node scripts/test-smoke.mjs
 
 ## 迁移
 
-见 \`docs/MIGRATION.md\`：本包完善并通过测试后，停用旧 \`surfcore\`，安装本包。
+见 \`docs/MIGRATION.md\`：本包完善并通过测试后，停用旧 \`dsbot\`，安装本包。
 `;
 }
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help || !args.name) {
-    console.log('用法：node tools/new-plugin.mjs --name surfcore-qq --title "SurfCore · QQ" --prefix /dsh-surfcore-qq/api [--order 8] [--color 12a8ff] [--desc "..."]');
+    console.log('用法：node tools/new-plugin.mjs --name dsbot-qq --title "DSBot · QQ" --prefix /dsh-dsbot-qq/api [--order 8] [--color 12a8ff] [--desc "..."]');
     process.exit(args.help ? 0 : 1);
   }
   const { name } = args;
   if (!/^[a-z][a-z0-9-]*$/.test(name)) throw new Error('包名只能是小写字母/数字/连字符');
-  const title = args.title || `SurfCore · ${name.replace(/^surfcore-/, '')}`;
+  const title = args.title || `DSBot · ${name.replace(/^dsbot-/, '')}`;
   const prefix = args.prefix || `/${name}/api`;
   const section = args.section || name;
-  const desc = args.desc || `${title}（SurfCore 拆分包）`;
+  const desc = args.desc || `${title}（DSBot 拆分包）`;
   const pkgDir = path.join(PLUGINS_ROOT, name);
   if (fs.existsSync(pkgDir)) throw new Error(`目录已存在：${pkgDir}`);
 

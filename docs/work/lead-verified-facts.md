@@ -8,21 +8,21 @@
 | 项 | 事实 | 证据 |
 | --- | --- | --- |
 | DSH 运行时 | `@deepseek-ai/dsh` **0.2.1-rc.5** | `dsh-0.2-trial/package.json`；进程 `node .../dsh-0.2-trial/node_modules/@deepseek-ai/dsh/lib/bin.js --profile web` |
-| DSH_HOME | `/home/ubuntu/dsh-agentchat/dsh-0.2-home` | `/etc/systemd/system/surfcore-dsh.service` 的 `Environment=DSH_HOME=...` |
-| profile | `web`（bundles 含 `surfcore`、`dsh-tide-badge` 等） | `dsh-0.2-home/profiles/web/package.json` |
+| DSH_HOME | `/home/ubuntu/dsh-agentchat/dsh-0.2-home` | `/etc/systemd/system/dsbot-dsh.service` 的 `Environment=DSH_HOME=...` |
+| profile | `web`（bundles 含 `dsbot`、`dsh-tide-badge` 等） | `dsh-0.2-home/profiles/web/package.json` |
 | Node | v24.19.0 | `node -v` |
-| 服务管理 | systemd：`surfcore-dsh.service`、`surfcore-bridge.service`（均 `Restart=always`） | `/etc/systemd/system/*.service` |
-| 资源 | 3 GB 内存（DSH 已用 1.8–2.0 GB，swap 已用 ~98 MB）；磁盘 40G/剩余 25G | `systemctl status surfcore-dsh`、`free -g`、`df -h` |
-| 当前 agent 会话 | **就跑在 `surfcore-dsh.service`（pid 990）里** → 重启该服务会中断当前 DSH 会话 | `ps` / `systemctl status surfcore-dsh` 的 CGroup 包含本会话进程 |
+| 服务管理 | systemd：`dsbot-dsh.service`、`dsbot-bridge.service`（均 `Restart=always`） | `/etc/systemd/system/*.service` |
+| 资源 | 3 GB 内存（DSH 已用 1.8–2.0 GB，swap 已用 ~98 MB）；磁盘 40G/剩余 25G | `systemctl status dsbot-dsh`、`free -g`、`df -h` |
+| 当前 agent 会话 | **就跑在 `dsbot-dsh.service`（pid 990）里** → 重启该服务会中断当前 DSH 会话 | `ps` / `systemctl status dsbot-dsh` 的 CGroup 包含本会话进程 |
 
 ## 2. QQ 接入事实（迁移的关键前提）
 
 - SnowLuma 在 Docker：容器 `snowluma`，镜像 `docker.m.daocloud.io/motricseven7/snowluma:latest`，端口 `127.0.0.1:3000`（OneBot HTTP，path `/`）、`127.0.0.1:3001`（OneBot WS，path `/`，role Universal）、`5099` WebUI、`6081` VNC。
 - OneBot 配置：`/home/ubuntu/dsh-agentchat/snowluma/data/config/onebot_2477094441.json`（`mode:"overlay"`，`accessToken` 已设置，值掩码；WS `role:"Universal"`、`messageFormat:"array"`、`historySync.enabled:false`）。
-- 机器人 QQ：`2477094441`；主人 QQ：`1362431704`（来自 SurfCore 生产配置 `admin.qq`）。
+- 机器人 QQ：`2477094441`；主人 QQ：`1362431704`（来自 DSBot 生产配置 `admin.qq`）。
 - **当前 QQ 登录态不正常**（2026-11-03 12:10 起）：SnowLuma 日志显示
   `awaiting EULA/PRIVACY consent before the panel unlocks`、`awaiting login: PID=80`；
-  `surfcore-bridge` 每 30 秒刷 `SnowLuma WebSocket closed before opening` / `连不上 OneBot HTTP API`；
+  `dsbot-bridge` 每 30 秒刷 `SnowLuma WebSocket closed before opening` / `连不上 OneBot HTTP API`；
   直接 `curl http://127.0.0.1:3000/get_login_info` 被 connection reset。
   → **迁移前必须先通过 VNC/WebUI 重新登录机器人 QQ（并完成 EULA 同意）。**
 - 同一 QQ 号同一时间只能有一个 OneBot 消费方：bridge.js 与 Aurabot 不能同时连 SnowLuma，否则会双收消息/双回复。
@@ -68,16 +68,16 @@
 | Chrome/Chromium/Edge | **未安装** | 刷抖音（需非 headless 浏览器）不可用 |
 | 内存 | 3 GB，DSH 已占 ~1.8–2.0 GB | 同时跑两套风险高；建议停一套再起另一套 |
 
-## 6. SurfCore 侧现状（迁移对象）
+## 6. DSBot 侧现状（迁移对象）
 
-- 生产人格：当前角色 `原装-大肥鱼`（`surfcore/state/current-role.json`），人格卡 `surfcore/roles/原装-大肥鱼.md`（3880 B）——
-  **与 Aurabot 自带 `personas/dafeiyu.md` 是两份不同文本**（SurfCore 版是用户自己改的），迁移时必须把这份文本搬进 Aurabot 人格，不要用自带默认覆盖。
-- 角色数据在 `DSH_HOME/surfcore/characters/{da-fei-yu,...}`（persona.md、memory/*、purpose-outreach.json）。
-- 记忆卡：`DSH_HOME/surfcore/memory/memory-card.md` 等（当前内容接近空，23% 容量、13.9k 字，主要是「还没有记忆」占位）。
-- Token 额度：`DSH_HOME/surfcore/token-usage-{daily,state}.json`；预算配置在合体 `config.json`（`tokenBudget`/`pricing` 等）。
+- 生产人格：当前角色 `原装-大肥鱼`（`dsbot/state/current-role.json`），人格卡 `dsbot/roles/原装-大肥鱼.md`（3880 B）——
+  **与 Aurabot 自带 `personas/dafeiyu.md` 是两份不同文本**（DSBot 版是用户自己改的），迁移时必须把这份文本搬进 Aurabot 人格，不要用自带默认覆盖。
+- 角色数据在 `DSH_HOME/dsbot/characters/{da-fei-yu,...}`（persona.md、memory/*、purpose-outreach.json）。
+- 记忆卡：`DSH_HOME/dsbot/memory/memory-card.md` 等（当前内容接近空，23% 容量、13.9k 字，主要是「还没有记忆」占位）。
+- Token 额度：`DSH_HOME/dsbot/token-usage-{daily,state}.json`；预算配置在合体 `config.json`（`tokenBudget`/`pricing` 等）。
 - B站：`bili.config.json` 只在，**当前未登录**（plugin.log：`生物钟未启动：B站 还没登录`），没有可搬迁的 B站 cookie 登录态 → 到 Aurabot 需重新登录。
-- QQ 桥接白名单/黑白名单：在 `surfcore/config.json`（bridge 配置）`allow.*` / `deny.*`。
-- 桥接控制台：`127.0.0.1:3100`（`consoleToken` 在 `surfcore/state/console-token`）。
+- QQ 桥接白名单/黑白名单：在 `dsbot/config.json`（bridge 配置）`allow.*` / `deny.*`。
+- 桥接控制台：`127.0.0.1:3100`（`consoleToken` 在 `dsbot/state/console-token`）。
 
 ## 7. 对两份 inventory「未确认项」的消解（Lead 实测）
 
@@ -95,5 +95,5 @@
 - aurabot 实际是「插件本体 + **3 个** preset」，README 里写「两个 preset」也不准确。
 - 本机 **没有 ffmpeg**（`which ffmpeg` 空）→ Aurabot 的「B站抽帧看画面 / 语音条编码 / 翻唱混音」要先装 ffmpeg；语音 TTS 本身（edge-tts mp3）不依赖 ffmpeg。
 - 本机 **没有 Chrome/Chromium/Edge / Xvfb** → 抖音模块不可用（需要非 headless 浏览器 + X）。
-- **`surfcore-dsh.service` 就是当前这个 agent 会话所在的 DSH**：迁移时重启 DSH 会中断当前对话（先在面板/文档里说清楚，或从 systemd 外部执行）。
+- **`dsbot-dsh.service` 就是当前这个 agent 会话所在的 DSH**：迁移时重启 DSH 会中断当前对话（先在面板/文档里说清楚，或从 systemd 外部执行）。
 - SnowLuma 目前 EULA 未同意 + QQ 未登录（12:10 重启后 `awaiting EULA/PRIVACY consent` / `awaiting login: PID=80`），迁移第 0 步必须先恢复登录态。

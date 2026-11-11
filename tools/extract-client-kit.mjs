@@ -3,7 +3,7 @@
  * extract-client-kit.mjs —— 从旧单体插件的设置页里抽出「公共 UI 套件」模板。
  *
  * 为什么要工具而不是手抄：
- *   旧 `plugins/surfcore/lib/client.js` 是一个 5409 行的经典脚本，套件里的每个函数都
+ *   旧 `plugins/dsbot/lib/client.js` 是一个 5409 行的经典脚本，套件里的每个函数都
  *   在 factory 作用域顶层（4 空格缩进）。手抄行号极易错位（第一版就因为少了一行 `}`
  *   让 8 个包的 client.js 全部语法错误）。这里按「4 空格缩进的顶层声明」切块，按名字抽取，
  *   再拼成模板；行号漂移不会影响结果。
@@ -12,7 +12,7 @@
  *   node tools/extract-client-kit.mjs            # 重新生成 templates/client-kit.js
  *   node tools/extract-client-kit.mjs --check    # 只校验模板是否与旧源一致（CI 用）
  *
- * 只读旧仓库：/home/ubuntu/dsh-agentchat/surfcore/plugins/surfcore/lib/client.js
+ * 只读旧仓库：/home/ubuntu/dsh-agentchat/dsbot/plugins/dsbot/lib/client.js
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,7 +21,33 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PLUGINS_ROOT = path.resolve(HERE, '..');
 const DSH_WORKSPACE = path.resolve(PLUGINS_ROOT, '..');
-const SOURCE = path.join(DSH_WORKSPACE, 'surfcore', 'plugins', 'surfcore', 'lib', 'client.js');
+/**
+ * 老仓库不随本仓库分发：在它的 plugins/ 下找最大的 lib/client.js（合体插件那一份）。
+ * 也可以用 DSBOT_OLD_REPO 指定老仓库根。
+ */
+function findOldClientJs() {
+  const repo = process.env.DSBOT_OLD_REPO ? path.resolve(process.env.DSBOT_OLD_REPO) : '';
+  const roots = repo ? [repo] : (() => {
+    try {
+      return fs.readdirSync(DSH_WORKSPACE)
+        .map((n) => path.join(DSH_WORKSPACE, n))
+        .filter((d) => fs.existsSync(path.join(d, 'plugins')));
+    } catch { return []; }
+  })();
+  const found = [];
+  for (const root of roots) {
+    let pkgs = [];
+    try { pkgs = fs.readdirSync(path.join(root, 'plugins')); } catch { continue; }
+    for (const name of pkgs) {
+      const f = path.join(root, 'plugins', name, 'lib', 'client.js');
+      if (fs.existsSync(f)) found.push(f);
+    }
+  }
+  found.sort((a, b) => fs.statSync(b).size - fs.statSync(a).size);
+  return found[0] || '';
+}
+
+const SOURCE = findOldClientJs();
 const TARGET = path.join(PLUGINS_ROOT, 'templates', 'client-kit.js');
 
 /** 要抽的顶层声明（按顺序），名字 → 条目标题。`CSS_TAG` 由每个包自己声明，不抽。 */
@@ -59,9 +85,9 @@ const WANTED = [
 ];
 
 const HEADER = `/**
- * SurfCore 拆分 · 浏览器半边公共 UI 套件（模板）。
+ * DSBot 拆分 · 浏览器半边公共 UI 套件（模板）。
  *
- * 来源：旧单体插件 plugins/surfcore/lib/client.js 的通用部分，由
+ * 来源：旧单体插件 plugins/dsbot/lib/client.js 的通用部分，由
  * tools/extract-client-kit.mjs 按「factory 顶层声明」自动抽取，未改行为。
  * 生成时间与来源行号见 tools/extract-client-kit.mjs 的输出。
  *

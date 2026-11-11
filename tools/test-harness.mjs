@@ -4,7 +4,7 @@
  *
  * 提供四类能力：
  *   1. checkPackage(pkgDir)      静态体检：包清单、bundle patch、自包含（不许引用包外文件）
- *   2. makeTmpEnv()              临时 DSH_HOME / surfcore 根，绝不碰真实 ~/.dsh
+ *   2. makeTmpEnv()              临时 DSH_HOME / dsbot 根，绝不碰真实 ~/.dsh
  *   3. createMockCtx()           假 ctx + 假 req/res + 路由匹配，用来装配宿主半边
  *   4. loadClient()              用假 window/React 加载 lib/client.js，验证设置栏目注册
  *
@@ -16,7 +16,7 @@
  *   const { apply } = await import(`../lib/index.js?t=${Date.now()}`);
  *   const ctx = createMockCtx();
  *   apply(ctx);
- *   const r = await ctx.invoke('GET', '/dsh-surfcore-token/api/status');
+ *   const r = await ctx.invoke('GET', '/dsh-dsbot-token/api/status');
  *   assert.equal(r.status, 200);
  *
  * 注意：本文件是 ESM 工具，不依赖任何 DSH 包。
@@ -198,7 +198,7 @@ export function checkPackage(pkgDir, opts = {}) {
  *
  * 有些拆分包确实需要 npm 依赖（例如 qq-mode 要 @deepseek-ai/schemastery），
  * 但离线开发时包里没有 node_modules。测试里调用本函数，从本机已安装的位置
- * （DSH profile / DSH 安装目录 / 旧 surfcore 仓库）借一份；**运行时仍然靠
+ * （DSH profile / DSH 安装目录 / 旧 dsbot 仓库）借一份；**运行时仍然靠
  * 包自己 package.json 声明的依赖**，所以这不违反自包含（不是包外代码引用）。
  */
 export function ensureDepOnPath(names) {
@@ -206,7 +206,7 @@ export function ensureDepOnPath(names) {
     process.env.DSH_PROFILE_DIR && path.join(process.env.DSH_PROFILE_DIR, 'node_modules'),
     process.env.DSH_HOME && path.join(process.env.DSH_HOME, 'node_modules'),
     path.resolve(PLUGINS_ROOT, '..', 'dsh-0.2-trial', 'node_modules'),
-    path.resolve(PLUGINS_ROOT, '..', 'surfcore', 'node_modules'),
+    path.resolve(PLUGINS_ROOT, '..', 'dsbot', 'node_modules'),
     path.resolve(PLUGINS_ROOT, '..', 'dsh-0.2-home', 'profiles', 'web', 'node_modules'),
   ].filter(Boolean);
   const found = [];
@@ -228,36 +228,36 @@ export function ensureDepOnPath(names) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * 造一个临时 DSH_HOME + surfcore 根并写进环境变量。
+ * 造一个临时 DSH_HOME + dsbot 根并写进环境变量。
  * 必须在动态 import 宿主模块**之前**调用（vendored paths.js 在 import 时解析路径）。
- * 返回 { home, surfcoreRoot, cleanup() }。
+ * 返回 { home, dsbotRoot, cleanup() }。
  */
 export function makeTmpEnv({ qqStart = true, biliStart = true } = {}) {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'surfcore-split-'));
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'dsbot-split-'));
   const home = path.join(base, 'dsh-home');
-  const surfcoreRoot = path.join(base, 'surfcore');
+  const dsbotRoot = path.join(base, 'dsbot');
   fs.mkdirSync(home, { recursive: true });
-  fs.mkdirSync(path.join(surfcoreRoot, 'src'), { recursive: true });
-  fs.mkdirSync(path.join(surfcoreRoot, 'state'), { recursive: true });
+  fs.mkdirSync(path.join(dsbotRoot, 'src'), { recursive: true });
+  fs.mkdirSync(path.join(dsbotRoot, 'state'), { recursive: true });
   // 让 vendored paths.js 的探针认得这是「桥接仓库根」。
-  fs.writeFileSync(path.join(surfcoreRoot, 'config.json'), `${JSON.stringify({
+  fs.writeFileSync(path.join(dsbotRoot, 'config.json'), `${JSON.stringify({
     version: 1,
     platforms: { start: { qq: qqStart, bili: biliStart } },
   }, null, 2)}\n`);
-  fs.writeFileSync(path.join(surfcoreRoot, 'src', 'bridge.js'), '// probe only\n');
-  fs.mkdirSync(path.join(home, 'surfcore'), { recursive: true });
+  fs.writeFileSync(path.join(dsbotRoot, 'src', 'bridge.js'), '// probe only\n');
+  fs.mkdirSync(path.join(home, 'dsbot'), { recursive: true });
   process.env.DSH_HOME = home;
   process.env.USERPROFILE = home;
-  process.env.SURFCORE_ROOT = surfcoreRoot;
-  process.env.SURFCORE_SKIP_AUTOSTART = '1';
-  process.env.SURFCORE_DISABLE_CHARACTER_MIGRATION = '1';
-  process.env.SURFCORE_DISABLE_MEMORY_TIMER = '1';
+  process.env.DSBOT_ROOT = dsbotRoot;
+  process.env.DSBOT_SKIP_AUTOSTART = '1';
+  process.env.DSBOT_DISABLE_CHARACTER_MIGRATION = '1';
+  process.env.DSBOT_DISABLE_MEMORY_TIMER = '1';
   return {
     base,
     home,
-    surfcoreRoot,
-    stateDir: path.join(home, 'surfcore'),
-    qqConfig: path.join(surfcoreRoot, 'config.json'),
+    dsbotRoot,
+    stateDir: path.join(home, 'dsbot'),
+    qqConfig: path.join(dsbotRoot, 'config.json'),
     cleanup() {
       try { fs.rmSync(base, { recursive: true, force: true }); } catch {}
     },

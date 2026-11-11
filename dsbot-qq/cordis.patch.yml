@@ -1,0 +1,27 @@
+# ============================================================================
+# dsbot-qq —— 由旧单体插件 dsbot 拆出的独立 bundle
+# ============================================================================
+# 本包要插**两行**：
+#
+#   1. id: dsbot-qq   —— 插件本体（宿主 lib/index.js + 设置栏目 lib/client.js）
+#   2. id: qq-mode       —— QQ 桥接的 settings 命名空间（见 lib/qq-mode.js 头注释）
+#
+# 为什么第 2 行不能删：
+#   DSH 0.2.x 的 settings 命名空间由「loader entry id + 该 entry 导出的 Config」推导。
+#   QQ 桥接（<dsbot>/src/bridge.js，外部进程）通过 DSH settings 读写 `qq-mode`
+#   命名空间来切换 chat / closed-agent / reserved / reserved2 —— 第 2 行删掉，
+#   桥接的模式切换会直接失效（且不会报错，只是静默不生效）。
+#   那一行不是第二个用户插件：它不注册任何 UI，apply() 是空的。
+#
+# ⚠️ 「id 必须精确等于 qq-mode」是硬契约（见 SPLIT-ARCHITECTURE §4.1 / qq-mode.js 注释）。
+# ⚠️ 与旧 dsbot 同时安装时不会冲突：行 id / 路由前缀 / 设置栏目 id 都不同；
+#    但 qq-mode 命名空间只有一个 —— 迁移期不要新旧两边同时启用（MIGRATION.md）。
+# ============================================================================
+- insert:
+    - id: dsbot-qq
+      name: dsbot-qq
+      config: {}
+    # QQ 桥接用的 settings 命名空间（模块导出带 volatile 字段的 Config，不注册 UI）
+    - id: qq-mode
+      name: ./lib/qq-mode.js
+      config: {}

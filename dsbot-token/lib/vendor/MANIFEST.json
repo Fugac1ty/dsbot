@@ -1,0 +1,49 @@
+{
+  "generator": "插件/tools/vendor.mjs",
+  "generatedAt": "2026-11-03T03:54:50.694Z",
+  "sourceRoot": "<老仓库>",
+  "roots": [
+    "plugins/<合体插件>/lib/token-budget.js",
+    "plugins/<合体插件>/lib/token-usage-pure.js",
+    "plugins/<合体插件>/lib/paths.js",
+    "plugins/<合体插件>/lib/http-guard.js"
+  ],
+  "copyDirs": [],
+  "files": [
+    {
+      "rel": "plugins/<合体插件>/lib/http-guard.js",
+      "bytes": 5736,
+      "sha256": "83d2acbd47a429bc91ce13746d33a61a1b64e22ffa1791e5751a1e073d984d61"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/paths.js",
+      "bytes": 6295,
+      "sha256": "cdbf74c9ecb8265b97741051c89bc1330c7d42281a652a07480d481795d1ea7d"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/token-budget.js",
+      "bytes": 30692,
+      "sha256": "94ce9b564d1e41b0089b220295b18422a29238703cb5f5f3acadaa4b2e8cd74b"
+    },
+    {
+      "rel": "plugins/<合体插件>/lib/token-usage-pure.js",
+      "bytes": 4997,
+      "sha256": "e0a2f63ca545485d17295926739c933315c60c774a44991d78b969f2080dc567"
+    },
+    {
+      "rel": "src/model-prices.js",
+      "bytes": 12990,
+      "sha256": "06d717cff7967f54b93077d3e631d656466c5df72fce083212fab44ab7e6e91b"
+    },
+    {
+      "rel": "src/token-budget.js",
+      "bytes": 17232,
+      "sha256": "fbaf0e1358c842a00909ee7169539cc844dda96cc07d0203e37836425ab9aa7a"
+    },
+    {
+      "rel": "src/token-ledger.js",
+      "bytes": 41272,
+      "sha256": "90e3de30335d56d73a1ae6dffac7079b3d87d0eaeeaca68c28b121074f87d2e2"
+    }
+  ]
+}

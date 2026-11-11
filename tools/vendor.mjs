@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 /**
- * vendor.mjs —— 把旧单体插件（surfcore）里需要的模块「原样」复制进新插件包。
+ * vendor.mjs —— 把旧单体插件（dsbot）里需要的模块「原样」复制进新插件包。
  *
  * 设计要点：**保持仓库相对结构**。
- *   源：  <surfcore>/plugins/surfcore/lib/store.js
- *   目标：<新包>/lib/vendor/plugins/surfcore/lib/store.js
+ *   源：  <dsbot>/plugins/dsbot/lib/store.js
+ *   目标：<新包>/lib/vendor/plugins/dsbot/lib/store.js
  * 源文件里的相对导入（如 `../../../src/admin-identity.js`）在目标里被解析到
  *   <新包>/lib/vendor/src/admin-identity.js —— 只要闭包内所有文件都按同样结构复制，
  *   **一行 import 都不用改**。这是本工具最重要的性质。
  *
  * 用法：
- *   node tools/vendor.mjs --pkg surfcore-token \
- *        --roots plugins/surfcore/lib/token-budget.js,plugins/surfcore/lib/token-usage-pure.js
+ *   node tools/vendor.mjs --pkg dsbot-token \
+ *        --roots plugins/dsbot/lib/token-budget.js,plugins/dsbot/lib/token-usage-pure.js
  *
- *   node tools/vendor.mjs --pkg surfcore-qq --roots ... --check   # 只校验是否与源一致
+ *   node tools/vendor.mjs --pkg dsbot-qq --roots ... --check   # 只校验是否与源一致
  *
  * 选项：
  *   --pkg <dir>        新插件包目录（相对当前目录或绝对路径；必须已存在）
- *   --roots <a,b,c>    入口模块，路径相对 surfcore 仓库根
- *   --src <dir>        surfcore 仓库根（默认：../../surfcore，相对本工具所在插件工作区）
+ *   --roots <a,b,c>    入口模块，路径相对老仓库根
+ *   --src <dir>        老仓库根（默认自动探测兄弟目录，也可用 DSBOT_OLD_REPO 环境变量）
  *   --check            不写文件，只校验 lib/vendor 与源闭包是否完全一致（含数量/哈希）
  *   --dry-run          只打印将复制什么
  *
@@ -31,7 +31,25 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PLUGINS_ROOT = path.resolve(HERE, '..');
-const DEFAULT_SRC = path.resolve(PLUGINS_ROOT, '..', 'surfcore');
+/**
+ * 老仓库（早期的合体插件仓库）不随本仓库分发。默认在插件工作区的兄弟目录里探测
+ * （同时含 config.json 与 src/bridge.js 的那个），也可以用 --src 或环境变量 DSBOT_OLD_REPO 指定。
+ */
+function findDefaultSrc() {
+  if (process.env.DSBOT_OLD_REPO) return path.resolve(process.env.DSBOT_OLD_REPO);
+  const parent = path.resolve(PLUGINS_ROOT, '..');
+  try {
+    for (const name of fs.readdirSync(parent)) {
+      const dir = path.join(parent, name);
+      if (fs.existsSync(path.join(dir, 'config.json')) && fs.existsSync(path.join(dir, 'src', 'bridge.js'))) {
+        return dir;
+      }
+    }
+  } catch { /* 读不到就当没找到 */ }
+  return '';
+}
+
+const DEFAULT_SRC = findDefaultSrc();
 
 /** ESM/CJS 里可能出现的相对说明符。`?rev=` 之类的查询串要剥掉再找文件。 */
 const SPEC_RE = /(?:^|[\s;({])(?:import|export)\s+(?:[^'"]*?\s+from\s+)?['"]([^'"]+)['"]|(?:require|import)\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
@@ -193,15 +211,15 @@ function writeVendor({ srcRoot, pkgDir, roots, copyDirs = [] }) {
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help || !args.pkg || !args.roots.length) {
-    console.log(`用法：node tools/vendor.mjs --pkg <新包目录> --roots <rel,rel,...> [--copy-dir <rel>]... [--src <surfcore 根>] [--check|--dry-run]
+    console.log(`用法：node tools/vendor.mjs --pkg <新包目录> --roots <rel,rel,...> [--copy-dir <rel>]... [--src <老仓库根>] [--check|--dry-run]
 
-例：node tools/vendor.mjs --pkg surfcore-token \\
-      --roots plugins/surfcore/lib/token-budget.js,plugins/surfcore/lib/token-usage-pure.js`);
+例：node tools/vendor.mjs --pkg dsbot-token \\
+      --roots plugins/dsbot/lib/token-budget.js,plugins/dsbot/lib/token-usage-pure.js`);
     process.exit(args.help ? 0 : 1);
   }
   const srcRoot = path.resolve(args.src);
   const pkgDir = path.resolve(args.pkg);
-  if (!fs.existsSync(path.join(srcRoot, 'package.json'))) throw new Error(`--src 不像 surfcore 仓库根：${srcRoot}`);
+  if (!fs.existsSync(path.join(srcRoot, 'package.json'))) throw new Error(`--src 不像 dsbot 仓库根：${srcRoot}`);
   if (!fs.existsSync(pkgDir)) throw new Error(`新包目录不存在：${pkgDir}`);
 
   if (args.check) {

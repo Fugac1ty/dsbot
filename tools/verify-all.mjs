@@ -10,7 +10,7 @@
  * 用法：
  *   node tools/verify-all.mjs            # 全套
  *   node tools/verify-all.mjs --quick    # 跳过各包的冒烟测试（只做静态检查）
- *   node tools/verify-all.mjs surfcore-qq surfcore-token   # 指定包
+ *   node tools/verify-all.mjs dsbot-qq dsbot-token   # 指定包
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { checkPackage, PLUGINS_ROOT } from './test-harness.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SRC_ROOT = path.resolve(PLUGINS_ROOT, '..', 'surfcore');
+const SRC_ROOT = path.resolve(PLUGINS_ROOT, '..', 'dsbot');
 
 const argv = process.argv.slice(2);
 const quick = argv.includes('--quick');

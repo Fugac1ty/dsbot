@@ -18,12 +18,12 @@
 | B-3 | Step 3 对 3 个 MCP server 的依赖判断错（35 走 3100 / 4 只读直连 3000；host 直连 3000 停桥后仍可用） | **已改**：Step 3 表格逐条重写 |
 | B-4 | 「42 个 `mcp__snowluma__*`」表述错（42 = 39 + 1 + 2） | **已改**：Migration §0/§4/§10、API §0 全部改为「42 个 MCP 工具（39+1+2）」 |
 | B-5 | 桌宠接口数：`/pet-api/*` 12 条、`/pet/*` 11 条（原写 14） | **已改**：API §4.2、§5.1#7 |
-| B-6 | SurfCore 14 tab 与 15 行表不符；「记忆卡」不是独立 tab | **已改**：API §1.1 加口径说明（14 个真实 tab，记忆卡在「记忆」页内，表按能力拆 15 行） |
+| B-6 | DSBot 14 tab 与 15 行表不符；「记忆卡」不是独立 tab | **已改**：API §1.1 加口径说明（14 个真实 tab，记忆卡在「记忆」页内，表按能力拆 15 行） |
 | B-7 | hook 数：10 可改写 + 7 只读（原写 11/9） | **已改**：API §1.3、§4.7 |
 | B-8 | 插件内测试脚本 36 个（scripts/ 共 42 文件） | **已改**：API §4.4 |
 | B-9 | `tools/bili.mjs` 子命令 46 个（原写 50） | **已改**：API §1.3、§4.4 |
 | B-10 | `social-v2.json` 少一层 `conversations`；closure 私聊+群共 4 条 | **已改**：Migration §7 路径与条数；API §3.5 同步 |
-| B-11 | `journalctl -u surfcore-dsh` 看不到插件日志（输出重定向到文件） | **已改**：Step 4 改 `tail -n 120 logs-surfcore-dsh.log`，并提示该文件含 `?token=` 需脱敏 |
+| B-11 | `journalctl -u dsbot-dsh` 看不到插件日志（输出重定向到文件） | **已改**：Step 4 改 `tail -n 120 logs-dsbot-dsh.log`，并提示该文件含 `?token=` 需脱敏 |
 | B-12 | WebUI 5099 不能走面板 `/vnc`（只代理 VNC 6081）；`docker logs --tail` 取密码会失效 | **已改**：§5 改为 SSH 隧道 + `docker logs ... | grep "initial credentials" | tail -20` |
 | B-13 | 「aureth-labs 与上游同一 commit」verifier 无法独立验证（网络） | **保留 + 弱化措辞**：Lead 采集时 `git ls-remote` 两边输出一致（b3301f6b0140…），文档改为「同一 commit sha（采集时对照；不构成对镜像同步策略的背书）」 |
 

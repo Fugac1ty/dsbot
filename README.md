@@ -13,7 +13,7 @@ DSBot 是一个**跑在你自己电脑上**的本地 AI 陪伴系统，以 [Deep
 | 形态 | DSH 插件集合 + 独立 QQ 桥接进程，本地部署、单机运行 |
 | 载体 | QQ（SnowLuma2 / 任意 OneBot v11）· B站 · 桌面桌宠 · 语音 |
 | 组成 | **8 个可独立安装、独立停用的功能模块** + 工程文档 |
-| 数据 | 全部留在本机（默认 `~/.dsh/surfcore/`），仓库里不含任何真实数据 |
+| 数据 | 全部留在本机（默认 `~/.dsh/dsbot/`），仓库里不含任何真实数据 |
 | 许可 | MIT（SnowLuma2 是第三方专有运行时，**不随本仓库分发**） |
 
 ---
@@ -62,8 +62,8 @@ DSBot 是一个**跑在你自己电脑上**的本地 AI 陪伴系统，以 [Deep
 └───────────┘ └────────────┘ └───────────────────────┘
 ```
 
-- **两套状态根**：桥接数据在仓库内 `state/`，插件数据在 `~/.dsh/surfcore/`。
-- **三份配置**：`config.json`（QQ）、`~/.dsh/surfcore/config.json`（合体层）、`bili.config.json`（B站）。
+- **两套状态根**：桥接数据在仓库内 `state/`，插件数据在 `~/.dsh/dsbot/`。
+- **三份配置**：`config.json`（QQ）、`~/.dsh/dsbot/config.json`（合体层）、`bili.config.json`（B站）。
 - **DSH 端口会漂移**：桥接与插件都用 `discoverDshBaseUrl()` 发现，不硬编码。
 - **工具面 fail-closed**：群友会话里的本地工具全部被 restrict，白名单之外什么都调不到。
 
@@ -76,14 +76,14 @@ DSBot 是一个**跑在你自己电脑上**的本地 AI 陪伴系统，以 [Deep
 
 | 模块 | 负责 |
 | --- | --- |
-| [核心](surfcore-core/) | 配置模型与读改写、管理员身份投影、概览/诊断、全部参数、扩展宿主、平台注册表、组件更新、备份、日志 |
-| [QQ](surfcore-qq/) | 桥接进程启停/自愈/日志/状态、模式切换、白名单/黑名单、SnowLuma 检测与启动、鱼群保护 |
-| [B站](surfcore-bili/) | 生物钟（五条 tick）、B站 配置与扫码登录、养鱼参数、观看历史、口味扫描、定时分享与四类动态、鱼群守则 |
-| [记忆](surfcore-memory/) | 衰减记忆卡（维护/压缩/备份/注入块渲染）、双向脱敏记忆、身份对齐、隐私闸门、主人特权审计 |
-| [角色](surfcore-character/) | 角色包创建/切换/存档/回档/删除、人格卡解析与编辑、角色迁移与指针、自我认同 |
-| [额度](surfcore-token/) | 每日 token 额度与用量采集（四口径）、峰谷计价、80%/100% 闸门、启动回填 |
-| [桌宠](surfcore-pet/) | 桌宠安装/更新/启停/卸载、桌宠对话、目的机制的桌宠载体、`pet/host.json` 心跳 |
-| [语音](surfcore-voice/) | 语音包安装/启停/健康检查、TTS 路由（本地/云端/Piper）、角色音色、云端凭据 |
+| [核心](dsbot-core/) | 配置模型与读改写、管理员身份投影、概览/诊断、全部参数、扩展宿主、平台注册表、组件更新、备份、日志 |
+| [QQ](dsbot-qq/) | 桥接进程启停/自愈/日志/状态、模式切换、白名单/黑名单、SnowLuma 检测与启动、鱼群保护 |
+| [B站](dsbot-bili/) | 生物钟（五条 tick）、B站 配置与扫码登录、养鱼参数、观看历史、口味扫描、定时分享与四类动态、鱼群守则 |
+| [记忆](dsbot-memory/) | 衰减记忆卡（维护/压缩/备份/注入块渲染）、双向脱敏记忆、身份对齐、隐私闸门、主人特权审计 |
+| [角色](dsbot-character/) | 角色包创建/切换/存档/回档/删除、人格卡解析与编辑、角色迁移与指针、自我认同 |
+| [额度](dsbot-token/) | 每日 token 额度与用量采集（四口径）、峰谷计价、80%/100% 闸门、启动回填 |
+| [桌宠](dsbot-pet/) | 桌宠安装/更新/启停/卸载、桌宠对话、目的机制的桌宠载体、`pet/host.json` 心跳 |
+| [语音](dsbot-voice/) | 语音包安装/启停/健康检查、TTS 路由（本地/云端/Piper）、角色音色、云端凭据 |
 
 **模块之间的三条约定：**
 
@@ -100,14 +100,14 @@ DSBot 是一个**跑在你自己电脑上**的本地 AI 陪伴系统，以 [Deep
 
 ```
 .
-├── surfcore-core/        # 核心：配置 / 诊断 / 更新 / 备份
-├── surfcore-qq/          # QQ 桥接控制、模式、白名单、SnowLuma
-├── surfcore-bili/        # B站 生物钟、登录、观看、动态
-├── surfcore-memory/      # 衰减记忆卡、脱敏、身份对齐
-├── surfcore-character/   # 角色包、人格卡、存档回档
-├── surfcore-token/       # 每日额度、用量采集、峰谷计价
-├── surfcore-pet/         # 桌宠安装启停、对话、目的载体
-├── surfcore-voice/       # 语音包、TTS 路由、角色音色
+├── dsbot-core/        # 核心：配置 / 诊断 / 更新 / 备份
+├── dsbot-qq/          # QQ 桥接控制、模式、白名单、SnowLuma
+├── dsbot-bili/        # B站 生物钟、登录、观看、动态
+├── dsbot-memory/      # 衰减记忆卡、脱敏、身份对齐
+├── dsbot-character/   # 角色包、人格卡、存档回档
+├── dsbot-token/       # 每日额度、用量采集、峰谷计价
+├── dsbot-pet/         # 桌宠安装启停、对话、目的载体
+├── dsbot-voice/       # 语音包、TTS 路由、角色音色
 │
 ├── docs/                 # 架构契约 / 实现手册 / 安装迁移 / 工程记录
 ├── tools/                # 骨架生成、全量体检、测试台
@@ -151,7 +151,7 @@ cd dsbot
 node tools/verify-all.mjs
 
 # 单个模块冒烟
-node surfcore-token/scripts/test-smoke.mjs
+node dsbot-token/scripts/test-smoke.mjs
 ```
 
 挂进 DSH 的步骤（preset / MCP / bundle 注册、profile 归属、共存冲突与回滚）见

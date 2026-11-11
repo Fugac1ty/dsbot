@@ -1,6 +1,6 @@
 # Aurabot（dsh-aurabot-qq）能力 / 配置 / 接口 / Linux 可行性 事实清单
 
-> 用途：把线上 QQ 机器人从 SurfCore 切到 Aurabot（目标形态 D）时，本文作为 Aurabot 侧的事实底稿。
+> 用途：把线上 QQ 机器人从 DSBot 切到 Aurabot（目标形态 D）时，本文作为 Aurabot 侧的事实底稿。
 > 只读盘点，未安装、未运行任何 setup/install/probe 脚本、未执行 npm test、未改任何代码或配置。
 >
 > 证据仓库：`/tmp/aurabot-qq-probe`（origin `https://github.com/aureth-labs/dsh-aurabot-qq.git`，HEAD `b3301f6`，2026-10-31，193 个文件）
@@ -17,7 +17,7 @@
 | Linux 可行性 | **核心聊天链路可用**（gateway=onebot）；语音 TTS 可用（需 python3-venv/uv）；B站/小黑盒/空间可用；抖音需非 headless 浏览器（服务器要 Xvfb）；**RVC 翻唱 = Windows-only**；桌宠可装 Electron 但桌面行为/窗口清单是 Windows-only；SnowLuma 进程管理/注入 = Windows-only（Linux 不用它） |
 | 接既有 Docker SnowLuma | `gateway:"onebot"` + `snowluma.httpUrl=http://127.0.0.1:3000` + `snowluma.wsUrl=ws://127.0.0.1:3001` + 两个 accessToken（配置键在 `snowluma.*` 下，哪怕 gateway=onebot）— `src/host.js:92-102`、`src/core/config.js:20-41` |
 | DSH 0.2.1-rc.5 兼容性 | **静态核对通过**：所用服务（webServer/systemPrompt/workspaceRegistry/sessionController/llm/attachments/speechToText/tools）、`ctx.effect/interval/get/on`、client `slots`（`main`、`sidebar.panellist`）、`dsh.bundle.patch`、`dsh.client.inject/external`、`github:` 安装 spec 在 rc.5 中均存在（证据见 §1.3）。**未实机安装验证** |
-| 最大坑 | ① 默认「总开关关 + 试运行开」，不改配置一句不发（`src/core/config.js:10-11`）；② 与 SurfCore bridge 同时连同一 OneBot = 双消费；③ 空间/表情包/改资料依赖 **SnowLuma 扩展 action**（非标准 OneBot v11），换网关会降级（§10 风险 5）；④ 面板装完插件必须重启 DSH（`README.md:42`） |
+| 最大坑 | ① 默认「总开关关 + 试运行开」，不改配置一句不发（`src/core/config.js:10-11`）；② 与 DSBot bridge 同时连同一 OneBot = 双消费；③ 空间/表情包/改资料依赖 **SnowLuma 扩展 action**（非标准 OneBot v11），换网关会降级（§10 风险 5）；④ 面板装完插件必须重启 DSH（`README.md:42`） |
 
 ## 1. 安装 / 运行要求与 Linux 可行性
 
@@ -41,7 +41,7 @@ dsh plugin --profile web add github:aureth-labs/dsh-aurabot-qq
 ```
 
 - DSH 侧 `github:` spec 由 plugin-manager 解析（`DSH:dsh-plugin-manager/lib/index.js:1168`），包必须声明 `dsh.bundle`（同文件 `:336,1866`），否则只当普通依赖装、**不会成为 profile layer**。
-- 本机现有 profile 形态可参考：`/home/ubuntu/dsh-agentchat/dsh-0.2-home/profiles/web/package.json`（dependencies + `dsh.profile.bundles` 列表，当前含 `surfcore` link）。
+- 本机现有 profile 形态可参考：`/home/ubuntu/dsh-agentchat/dsh-0.2-home/profiles/web/package.json`（dependencies + `dsh.profile.bundles` 列表，当前含 `dsbot` link）。
 - 升级=再跑一次 add + 重启 DSH（`README.md:57-63`）；数据目录不动（`README.md:59,121`）。
 
 ### 1.3 DSH 0.2.1-rc.5 兼容性核对（静态）
@@ -325,7 +325,7 @@ dsh plugin --profile web add github:aureth-labs/dsh-aurabot-qq
 ### 6.5 单连接不变量与双消费风险
 
 - Aurabot 侧只有一个 OneBot 客户端（`src/host.js:166`），HTTP 与 WS 都指向同一网关，不做多路广播。
-- 风险：SnowLuma 的 WS server 允许**多个客户端**；SurfCore 的外置 bridge 当前正在消费同一网关。同时连会出现「同一条消息被两套处理、两边都回」或事件互相扰动，且 Aurabot 的 `get_login_info` 校验只能证明它连的是机器人号，**不能阻止别人也连**。迁移步骤必须：先停 SurfCore bridge（本机 `/home/ubuntu/dsh-agentchat/logs-surfcore-bridge.log` 对应进程）→ 再开 Aurabot 总开关。
+- 风险：SnowLuma 的 WS server 允许**多个客户端**；DSBot 的外置 bridge 当前正在消费同一网关。同时连会出现「同一条消息被两套处理、两边都回」或事件互相扰动，且 Aurabot 的 `get_login_info` 校验只能证明它连的是机器人号，**不能阻止别人也连**。迁移步骤必须：先停 DSBot bridge（本机 `/home/ubuntu/dsh-agentchat/logs-dsbot-bridge.log` 对应进程）→ 再开 Aurabot 总开关。
 - Aurabot 没有文件锁/端口独占声明（配置与源码内均无 about 单实例锁）。
 
 ## 7. 数据资产与「导入 / 迁移入口」
@@ -407,15 +407,15 @@ dsh plugin --profile web add github:aureth-labs/dsh-aurabot-qq
 `slots.inject('main', () => slots.register({name:'main', key:'aurabot'}, AurabotPage))`、
 `slots.inject('sidebar.panellist', () => slots.register({name:'sidebar.panellist', id:'aurabot', order:20, label:()=>'Aurabot'}, WhaleIcon))`。
 
-## 9. 与 SurfCore 的架构差异（事实层面）
+## 9. 与 DSBot 的架构差异（事实层面）
 
-| 维度 | SurfCore（现状，线上） | Aurabot（目标） |
+| 维度 | DSBot（现状，线上） | Aurabot（目标） |
 |---|---|---|
-| 包形态 | bundle 两个 entry：`surfcore` + `qq-mode`（`/home/ubuntu/dsh-agentchat/dsh-0.2-home/plugins/surfcore/cordis.patch.yml:11-17`） | bundle 插件本体 + 3 preset（`cordis.patch.yml:9-143`） |
-| QQ 桥 | **外置进程**：`<surfcore>/src/bridge.js` 由插件启停/探活/读状态，console 端口默认 3100（`/home/ubuntu/dsh-agentchat/dsh-0.2-home/plugins/surfcore/lib/bridge.js:1-19`）；桥接模式由 DSH settings 的 `qq-mode` 命名空间切换（chat/closed-agent/reserved/reserved2，`/home/ubuntu/dsh-agentchat/dsh-0.2-home/plugins/surfcore/lib/qq-mode.js:1-19,40-45`） | **插件内 OneBot v11 客户端**（HTTP+WS，`src/onebot/client.js`），无外置进程、无 console 端口；一个客户端实例（`src/host.js:166`） |
+| 包形态 | bundle 两个 entry：`dsbot` + `qq-mode`（`/home/ubuntu/dsh-agentchat/dsh-0.2-home/plugins/‹合体插件›/cordis.patch.yml:11-17`） | bundle 插件本体 + 3 preset（`cordis.patch.yml:9-143`） |
+| QQ 桥 | **外置进程**：`<dsbot>/src/bridge.js` 由插件启停/探活/读状态，console 端口默认 3100（`/home/ubuntu/dsh-agentchat/dsh-0.2-home/plugins/‹合体插件›/lib/bridge.js:1-19`）；桥接模式由 DSH settings 的 `qq-mode` 命名空间切换（chat/closed-agent/reserved/reserved2，`/home/ubuntu/dsh-agentchat/dsh-0.2-home/plugins/‹合体插件›/lib/qq-mode.js:1-19,40-45`） | **插件内 OneBot v11 客户端**（HTTP+WS，`src/onebot/client.js`），无外置进程、无 console 端口；一个客户端实例（`src/host.js:166`） |
 | 会话模型 | 单 agent + bridge 注入（桥接负责映射聊天到会话） | **每个 QQ 私聊/群一个 DSH 会话**：`sessionController.create({workspaceId, agentPreset})`，工作区标题固定（`src/chat/hub.js:195-243`），侧栏「Aurabot · QQ」 |
 | 人格注入 | 角色卡在插件内，桥接每消息注入 | DSH preset 的系统提示词最前面用 `{{aurabot_persona}}` 变量 + `complete:true`（`cordis.patch.yml:20-26`、`src/host.js:70-85`）；切人格即时生效、不用重建 preset |
-| 记忆 | 记忆卡文件（surfcore-memory：衰减记忆卡/隐私闸门） | 本地索引：中文二元切词 + BM25 + 说话人/重要度/遗忘曲线加权；`memories.json` 单文件（`src/features/memory.js`、`README.md:72`） |
+| 记忆 | 记忆卡文件（dsbot-memory：衰减记忆卡/隐私闸门） | 本地索引：中文二元切词 + BM25 + 说话人/重要度/遗忘曲线加权；`memories.json` 单文件（`src/features/memory.js`、`README.md:72`） |
 | 每轮动态内容 | bridge 拼进消息 | `systemPrompt.context()` 追加心情/记忆，不破坏前缀缓存（`README.md:70`、`src/chat/hub.js:404`） |
 | 工具挂载 | 全局工具/桥接指令 | 按会话注册、按权限档与 `profilePerms` 动态挂（`src/chat/hub.js:345-421`、`src/chat/access.js:60-74`） |
 | 多实例/端口 | 桥接 console 3100；OneBot 3000/3001 由外置进程占用 | 无自有端口，复用 DSH web 端口；**OneBot 3000/3001 必须独占**（迁移期两套不能同时连） |
@@ -426,12 +426,12 @@ dsh plugin --profile web add github:aureth-labs/dsh-aurabot-qq
 1. **默认不发**：`enabled=false`、`dryRun=true`（`src/core/config.js:10-11`）；不手动打开不发一句（`README.md:12`）。
 2. **装完要重启 DSH**（`README.md:42`），面板/插件热更新只对用户模块有效（`src/core/modules.js:1-9`）。
 3. **数据落在 DSH_HOME**：`plugins-data/aurabot/`（`src/core/store.js:7-15`）；换 DSH_HOME/profile 等于换数据；`AURABOT_DATA_DIR` 可覆盖。
-4. **双消费者**：SurfCore bridge 与 Aurabot 不能同时连同一 OneBot（§6.5）；需要停机窗口。
+4. **双消费者**：DSBot bridge 与 Aurabot 不能同时连同一 OneBot（§6.5）；需要停机窗口。
 5. **SnowLuma 扩展 action 依赖**：空间（`send_qzone_msg` 等）、表情库（`add/modify/delete_custom_face`）、改资料（`set_qq_profile` 等）、语音转文字（`fetch_ptt_text`）、群公告（`_send_group_notice`）都是 SnowLuma 扩展，不是标准 OneBot v11。用本机 Docker SnowLuma 没问题；换 NapCat/LLOneBot 会降级（功能报错或面板置灰）。
 6. **平台能力缺口**：RVC 翻唱 Windows-only（§1.4）；桌宠桌面行为/窗口清单 Windows-only；抖音需非 headless 浏览器 + 有 X（服务器需 Xvfb）；edge-tts 需 `python3-venv` 或 uv（Linux 不会自动下 uv）。
 7. **权限面大**：主人私聊 = `full` preset，含 bash/fs/web 工具；群聊 = social 无本地工具。迁移时确认 `ownerQQ` 填对，否则权限档落错人（`src/chat/access.js:27-33`）。
 8. **成本/噪声功能默认关**：`bili/douyin/heybox/imageGen/song` 默认关；升级时 `qzoneSocial/bili/douyin` 对老配置强制先关（`src/core/config.js:500-509`）。
-9. **和 SurfCore 的命名空间冲突**：两者都是 profile bundle；DSH profile 的 `dsh.profile.bundles` 里并存会双插件运行（本机 profile 文件 `/home/ubuntu/dsh-agentchat/dsh-0.2-home/profiles/web/package.json` 当前含 `surfcore`）。迁移应先把 surfcore 从 bundles/依赖移除再装 Aurabot。
+9. **和 DSBot 的命名空间冲突**：两者都是 profile bundle；DSH profile 的 `dsh.profile.bundles` 里并存会双插件运行（本机 profile 文件 `/home/ubuntu/dsh-agentchat/dsh-0.2-home/profiles/web/package.json` 当前含 `dsbot`）。迁移应先把 dsbot 从 bundles/依赖移除再装 Aurabot。
 10. **面板/权限的「仅主人」有执行期二次校验**（`src/chat/access.js:60-74`），但 `profilePerms` 的 heybox 四项只在 normalize 时才补默认值 —— 直接把旧配置拷来时要检查这四项是否存在（`src/core/config.js:17,262`）。
 11. **插件本体零 npm 依赖**：插件本体无 npm 依赖（`package.json`），装不上通常是网络/git 访问问题；`extensions/tieba-reader` 才是独立 npm 包（`extensions/README.md`）。
 
@@ -443,7 +443,7 @@ dsh plugin --profile web add github:aureth-labs/dsh-aurabot-qq
 | U2 | `github:aureth-labs/dsh-aurabot-qq` 是否可匿名安装（仓库可见性/CI）；aureth-labs 与上游的同步策略 | `git ls-remote https://github.com/aureth-labs/dsh-aurabot-qq` + 用一次性 profile 试 add（不要动 web profile） |
 | U3 | aureth-labs 与 accomplish07zrh-eng 是否**逐字节**同一 commit（本地只有 aureth-labs origin `b3301f6`，无法证明镜像关系） | 对比两边 `git ls-remote`/commit 列表；或比对 `package.json` version 与 CHANGELOG 头部 |
 | U4 | SnowLuma WS `role:"Universal"` 是否接受 Aurabot 的 `?access_token=` 查询参数鉴权（代码如此发送，未实连验证） | 用 node 脚本连 `ws://127.0.0.1:3001/?access_token=***` 发 `get_login_info`，看是否回 `retcode:0` |
-| U5 | 同时连 SurfCore bridge 时的具体表现（双回复/事件竞争） | 迁移窗口内先只停 bridge、保留 Aurabot 观察 10 分钟日志 |
+| U5 | 同时连 DSBot bridge 时的具体表现（双回复/事件竞争） | 迁移窗口内先只停 bridge、保留 Aurabot 观察 10 分钟日志 |
 | U6 | 本机是否有可用的 `python3-venv`/uv（决定语音能否装） | `python3 -m venv --help`、`uv --version`、`ls ~/.local/bin/uv`（未执行，避免写盘） |
 | U7 | 服务器上是否有 X/Xvfb（决定抖音能否用） | `echo $DISPLAY`、`which Xvfb`；或在「抖音」页点扫码登录看浏览器是否起得来 |
 | U8 | 面板导入旧档案/表情/音色的 UI 在 web 版是否都可见（前端逻辑纯浏览器） | 装好后逐页点一遍，对照 §5 |

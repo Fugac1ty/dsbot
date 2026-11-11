@@ -1,8 +1,8 @@
-# SurfCore → Aurabot 能力 / 配置 / 数据 / 接口对照矩阵与缺口分析
+# DSBot → Aurabot 能力 / 配置 / 数据 / 接口对照矩阵与缺口分析
 
-> **口径**：目标 **D** —— 只把线上 QQ 机器人从 SurfCore 切到 Aurabot（`dsh-aurabot-qq@1.1.24`）。不写代码、不安装、不改配置；本文供正式迁移文档直接引用。
+> **口径**：目标 **D** —— 只把线上 QQ 机器人从 DSBot 切到 Aurabot（`dsh-aurabot-qq@1.1.24`）。不写代码、不安装、不改配置；本文供正式迁移文档直接引用。
 >
-> **证据缩写**：`SC:<行>` = `surfcore-inventory.md`；`AU:<行>` = `aurabot-inventory.md`；`LV:<行>` = `lead-verified-facts.md`；`src/…:行` = Aurabot 仓库 `/tmp/aurabot-qq-probe`（HEAD `b3301f6`，AU:6）源码；`<PL>` = SurfCore 线上插件目录。
+> **证据缩写**：`SC:<行>` = `dsbot-inventory.md`；`AU:<行>` = `aurabot-inventory.md`；`LV:<行>` = `lead-verified-facts.md`；`src/…:行` = Aurabot 仓库 `/tmp/aurabot-qq-probe`（HEAD `b3301f6`，AU:6）源码；`<PL>` = DSBot 线上插件目录。
 > 未确认项统一标「未确认」+ 确认方法（附录 A）。行号是写作时快照，漂移时以 `§` 锚点为准。敏感值掩码 `***`，QQ/群号保留。
 >
 > **判定词表**：`1:1` / `等价异名` / `部分` / `缺失`；**动作**：`自动可用` / `需重配` / `需人工重做` / `会丢失`；**影响**：`阻断` / `体验下降` / `无关`。
@@ -12,10 +12,10 @@
 | # | 结论 | 证据 |
 |---|---|---|
 | 1 | **技术可切**：Aurabot 1.1.24 已实测能在本机 DSH 0.2.1-rc.5 安装并启动；QQ 核心链路（gateway=onebot → 容器 SnowLuma）完全可用 | LV:32-47、LV:53-54 |
-| 2 | **范式不同，不是 1:1 换皮**：SurfCore「模型自主唤醒/潜水/收尾 + 工具发言」→ Aurabot「消息推送 + 策略决定回不回 + 正文即发言」。42 个 MCP 工具里 **约 30 个无对应**，其中 12 个属范式性缺失（已读水位/潜水/收尾/等待 4 个 + 未读查询 3 个 + 分条/引用/拍一拍 5 个） | 本文 §1.2、§4.1 |
+| 2 | **范式不同，不是 1:1 换皮**：DSBot「模型自主唤醒/潜水/收尾 + 工具发言」→ Aurabot「消息推送 + 策略决定回不回 + 正文即发言」。42 个 MCP 工具里 **约 30 个无对应**，其中 12 个属范式性缺失（已读水位/潜水/收尾/等待 4 个 + 未读查询 3 个 + 分条/引用/拍一拍 5 个） | 本文 §1.2、§4.1 |
 | 3 | **人格和记忆能搬**，但必须转换：人格 md 可直搬（无工具引用，`persona.md` 与 `roles/原装-大肥鱼.md` 字节相同）；303 条记忆要按字段映射写入 `memories.json`，**不要走面板导入**（单次 ≤3 万字、≤80 候选，会丢量） | LV:73-76；AU:336；`src/features/memory.js:208-229` |
 | 4 | **群聊体验会明显降级**：无联网搜索（social preset 不挂 tool-web）、无黑话库、无鱼群保护、无 token 闸、无上线补历史 | `cordis.patch.yml:119-143`；`src` 全仓无 `slang`/`tokenGuard`/`cost` |
-| 5 | **有硬冲突**：同一 QQ 号只能一个 OneBot 消费方；`surfcore-bridge.service` 是 `Restart=always`，不停用会反复抢消息；重启 DSH 会中断当前 agent 会话；3 GB 内存不支持两套并行 | LV:14-16、LV:28；`/etc/systemd/system/surfcore-bridge.service` |
+| 5 | **有硬冲突**：同一 QQ 号只能一个 OneBot 消费方；`dsbot-bridge.service` 是 `Restart=always`，不停用会反复抢消息；重启 DSH 会中断当前 agent 会话；3 GB 内存不支持两套并行 | LV:14-16、LV:28；`/etc/systemd/system/dsbot-bridge.service` |
 
 ---
 
@@ -25,7 +25,7 @@
 
 ### 1.1 设置页栏目（SC§4 L154-172）
 
-| SurfCore 能力（SC 引用） | Aurabot 对应（AU 引用 / 键） | 判定 | 迁移动作 | 影响 |
+| DSBot 能力（SC 引用） | Aurabot 对应（AU 引用 / 键） | 判定 | 迁移动作 | 影响 |
 |---|---|---|---|---|
 | 概览：桥接/SnowLuma/DSH 状态、模式、记忆卡比例、更新提示（L158） | 面板「概览」+ `/aurabot/api/state`（AU:288,358） | 等价异名 | 自动可用（字段不同，看连接/统计即可） | 无关 |
 | 角色：角色库 CRUD、12 槽快照、切换 epoch（L159） | 面板「人格」+ `personas/*.md`、`persona.current`（AU:289,335） | 部分（无快照/回档/epoch） | 需人工重做（搬人格 + 手工留档） | 体验下降 |
@@ -45,7 +45,7 @@
 
 ### 1.2 桥接「像人」行为（SC§3 L126-146，共 19 条）
 
-| SurfCore 能力（SC 行 / 实现） | Aurabot 对应（AU 引用 / 源码） | 判定 | 迁移动作 | 影响 |
+| DSBot 能力（SC 行 / 实现） | Aurabot 对应（AU 引用 / 源码） | 判定 | 迁移动作 | 影响 |
 |---|---|---|---|---|
 | ① 白名单/黑名单：`allow.*`+`deny.*`，空=全拒（L128） | `allow.private/groups` + `ownerQQ`（AU:149；`src/chat/access.js:11-24`）；**无 deny 名单** | 部分 | 需重配（必填，见 §2.4） | 阻断 |
 | ② 二代仿真 reserved2：文本不发出、必须调工具、会话令牌鉴权（L129） | **无对应模式**：正文即消息、群策略决定回不回、工具由模块按权限档挂（AU:415-420；`src/chat/reply.js:4-10`） | 缺失（范式不同） | 会丢失 + 替代：改由 `group.*` 策略 + `[沉默]` 决定不回 | 阻断（行为变化需用户书面接受） |
@@ -69,7 +69,7 @@
 
 ### 1.3 对外接口面
 
-| SurfCore 能力（SC 引用） | Aurabot 对应（AU 引用） | 判定 | 迁移动作 | 影响 |
+| DSBot 能力（SC 引用） | Aurabot 对应（AU 引用） | 判定 | 迁移动作 | 影响 |
 |---|---|---|---|---|
 | 插件 HTTP 24 入口 + 4 子路由族 + `/health`（L187-220） | `/aurabot/api/*` 74 条（AU:352-368） | 部分（路径/形状全不同） | 需人工重做（外部调用脚本） | 体验下降 |
 | MCP 42 工具（39 snowluma + host 1 + web-search 2，L222-230） | 模块工具 49 个（AU:389-393），语义不同 | 部分 | 会丢失 + 替代（§4.1） | 阻断（preset 提示词作废） |
@@ -83,9 +83,9 @@
 
 ## 2. 配置字段级对照
 
-### 2.1 `$DSH_HOME/surfcore/config.json`（合体配置，SC§2.1-2.2）
+### 2.1 `$DSH_HOME/dsbot/config.json`（合体配置，SC§2.1-2.2）
 
-| SurfCore 键（现值） | Aurabot 键 / 面板页 | 判定 | 动作 / 建议值 |
+| DSBot 键（现值） | Aurabot 键 / 面板页 | 判定 | 动作 / 建议值 |
 |---|---|---|---|
 | `qqbotRoot`、`bridge.autoStart/consoleBase`（`<SC>`/3100） | 无（Aurabot 无外置桥进程） | 无 | 忽略 |
 | `persona.file`（空）/`compactChars=2200` | `persona.current`（面板「人格」） | 部分 | 设 `da-fei-yu`（或覆盖 `dafeiyu`），见 §3.1 |
@@ -102,7 +102,7 @@
 
 ### 2.2 `<SC>/config.json`（桥接配置，SC§2.3，逐键）
 
-| SurfCore 键（现值） | Aurabot 键 | 判定 | 动作 / 建议值 |
+| DSBot 键（现值） | Aurabot 键 | 判定 | 动作 / 建议值 |
 |---|---|---|---|
 | `dsh.baseUrl=…:3102` | 无（插件在 DSH 内） | 无 | 忽略 |
 | `dsh.provider/model/reasoningEffort`（`deepseek-official`/`deepseek-flash`/`high`） | `model.provider/model/reasoningEffort`；`chatModels.*` 可按 QQ/群覆盖（AU:159-160） | 1:1 | **必填三项** |
@@ -137,9 +137,9 @@
 | `pricing.models.my-relay-model.*` | 无（Aurabot 无计价表） | 缺失 | 忽略（额度页整体缺失） |
 | `ackMessage` / `sendDelayMs=300` / `questionTimeoutMs` | 无 | 缺失 | 忽略 |
 
-### 2.3 `$DSH_HOME/surfcore/bili.config.json`（SC§2.4，B站未登录）
+### 2.3 `$DSH_HOME/dsbot/bili.config.json`（SC§2.4，B站未登录）
 
-| SurfCore 键 | Aurabot 键 | 判定 | 动作 |
+| DSBot 键 | Aurabot 键 | 判定 | 动作 |
 |---|---|---|---|
 | `self/owner` mid/name（全空） | `bili.sessdata/biliJct/cookie`（AU:194） | 部分 | **重新登录**（无 cookie 可搬，LV:78） |
 | `night.windows`（20:00-24:00）、`skipChance=0.3` | 无 | 缺失 | 忽略 |
@@ -167,18 +167,18 @@
 | 10 | `ownerLevel` / `longTasks` | `full` / `false` | 决定 `aurabot-private`；`longTasks=true` 换 `-private-long` |
 | 11 | `enabled` / `dryRun` | 先 `true` / `true`，验收后 `dryRun=false` | 安全默认（AU:244） |
 | 12 | `persona.current` | `da-fei-yu`（新 id）或保持 `dafeiyu`（覆盖自带卡） | §3.1 |
-| 13 | `group.wakeWords` | `['大肥鱼','肥鱼']` | Aurabot 默认即此值（AU:170）；SurfCore 对应的是 `social.mustReplyKeywords`= `['deepseek','小鲸鱼','大肥鱼','鲸鱼','d指导','在吗']`（`<SC>/config.json` 实测），可按需并入 |
-| 14 | `group.quietHours` | `[1,8]` | 与 SurfCore 夜间静默口径对齐（以现网实际作息为准） |
+| 13 | `group.wakeWords` | `['大肥鱼','肥鱼']` | Aurabot 默认即此值（AU:170）；DSBot 对应的是 `social.mustReplyKeywords`= `['deepseek','小鲸鱼','大肥鱼','鲸鱼','d指导','在吗']`（`<SC>/config.json` 实测），可按需并入 |
+| 14 | `group.quietHours` | `[1,8]` | 与 DSBot 夜间静默口径对齐（以现网实际作息为准） |
 | 15 | `workspaceDir` | 空（默认 `~/Aurabot/qq-chats`）或显式指定 | AU:151 |
 | 16 | `bili/douyin/heybox/imageGen/song.enabled` | 全部保持 `false` | 本期不迁（AU:247） |
 
-> 反方向（Aurabot 有、SurfCore 无）需要新决策的键：`profilePerms.*`（改资料/好友申请/白名单/抖音/小黑盒三档）、`titleFilter.*`、`group.overrides{}`、`chatModels.*`。
+> 反方向（Aurabot 有、DSBot 无）需要新决策的键：`profilePerms.*`（改资料/好友申请/白名单/抖音/小黑盒三档）、`titleFilter.*`、`group.overrides{}`、`chatModels.*`。
 
 ---
 
 ## 3. 数据资产迁移表
 
-> 总原则：**只搬「人格 + 记忆 + 关系语感」，运行态一律重建**。SurfCore 数据分居两处（插件 `<STATE>` vs 桥接 `<SC>/state`，SC:319），搬运时两处都要看，但只需取下列指定文件。
+> 总原则：**只搬「人格 + 记忆 + 关系语感」，运行态一律重建**。DSBot 数据分居两处（插件 `<STATE>` vs 桥接 `<SC>/state`，SC:319），搬运时两处都要看，但只需取下列指定文件。
 
 | 资产（SC§6 行 / LV） | 现路径 / 体量 | Aurabot 目标 / 格式 | 能直搬 | 迁移方式 | 转换后校验 |
 |---|---|---|---|---|---|
@@ -207,19 +207,19 @@
 
 ### 3.1 人格卡专项（结论：可直搬，但要改 id 且不能覆盖协议）
 
-- SurfCore 的 `persona.md` 与 `<SC>/roles/原装-大肥鱼.md` **逐字节相同**（已 `diff`），是「原装-大肥鱼」的唯一正文 → 搬一份即可。
+- DSBot 的 `persona.md` 与 `<SC>/roles/原装-大肥鱼.md` **逐字节相同**（已 `diff`），是「原装-大肥鱼」的唯一正文 → 搬一份即可。
 - 该文本**不含任何工具名/接口引用**（`grep qq_/mcp__/token` 无命中）→ 可以直接作为 Aurabot 人格正文，不会被失效工具名污染。
 - Aurabot 的 `personas/*.md` 只放「角色正文」；**输出协议由 `rulesText()` 代码拼接**（一句一行/`|||`/`<voice>`/`<sticker:>`/`<at:QQ>`/`<poke>`/`[沉默]`，`src/persona/personas.js:86-120`）。所以**不要**把 Aurabot 自带 `personas/dafeiyu.md` 整份覆盖掉就以为搬完了——自带卡里那几条「一次只说一句话，想说的多就拆成几条发，用 ||| 分隔」是人格层习惯（`personas/dafeiyu.md:18,52-53`），覆盖后会损失语感细节。
 - 两种落地方式：
-  - **A（推荐）**：新建 `personas/da-fei-yu.md`（内容 = SurfCore `persona.md`），面板「人格」里「设为当前」→ 写入 `persona.current="da-fei-yu"`；自带 `dafeiyu.md` 保留作参考。**多一步改配置，但可回退**。
-  - **B（最省事）**：直接用 SurfCore 文本覆盖 `personas/dafeiyu.md`，`persona.current` 不用改。**零配置改动，但丢失自带卡语感且不可单人回退**（无快照机制）。
+  - **A（推荐）**：新建 `personas/da-fei-yu.md`（内容 = DSBot `persona.md`），面板「人格」里「设为当前」→ 写入 `persona.current="da-fei-yu"`；自带 `dafeiyu.md` 保留作参考。**多一步改配置，但可回退**。
+  - **B（最省事）**：直接用 DSBot 文本覆盖 `personas/dafeiyu.md`，`persona.current` 不用改。**零配置改动，但丢失自带卡语感且不可单人回退**（无快照机制）。
 - 迁移前先 tar 归档 `characters/`（Aurabot 无快照/回档，§1.1 行「角色」）。
 
 ### 3.2 记忆卡 → `memories.json` 字段映射（303 条）
 
 Aurabot 的 item 形状：`{id,text,about,aboutName,tags,importance,source,chatId,at,hits,invalidAt?}`（AU:98）。硬约束（源码实测）：`text` 会被 **截断到 200 字**（`src/features/memory.js:187`）、`tags` 最多 5 条（`:200`）、库上限 3000 条（`:202`）、`add()` 会按相似度 ≥0.6 去重（`:191`）。
 
-| SurfCore 字段（真实取值） | Aurabot 字段 | 规则 |
+| DSBot 字段（真实取值） | Aurabot 字段 | 规则 |
 |---|---|---|
 | `text`（303 条：均长 12.7 字，最长 254，**仅 1 条 >200**） | `text` | 直拷；>200 字那条手工劈成两条 |
 | `speaker`（主人 165 / 大肥鱼 81 / 2円 33 / 自动骗 13 …） | `aboutName` | 直拷 |
@@ -250,7 +250,7 @@ Aurabot 全仓无黑话/梗库（`grep -rl "slang\|黑话" src/` 空）。三选
 
 ### 3.4 `social-v2.json` 记忆类字段 → Aurabot 记忆条目（实测取值）
 
-| SurfCore 字段（实测） | 内容 | Aurabot 落点 |
+| DSBot 字段（实测） | 内容 | Aurabot 落点 |
 |---|---|---|
 | `private:1362431704.activeTopics[0]` | `{text:"主人11月4日之前要交作业，需要提醒他", pendingQuestion:"11.3晚上提醒主人交作业"}` | 2 条记忆：`text` 原文，`aboutName:"主人"`、`about:"1362431704"`、`importance:0.9`、`tags:["约定","提醒"]` |
 | `private:…closure` | `summary:"主人又想用命令设定11.4交作业提醒…"`、`nextOpening:"下次他来说话，开头先催一句11.4的作业"` | 2 条记忆（`tags:["收尾","上次聊到"]`，`importance:0.7`）；**注意 `nextOpening` 的「下次开场」语义在 Aurabot 无注入点**，只能靠召回自然命中 |
@@ -264,9 +264,9 @@ Aurabot 全仓无黑话/梗库（`grep -rl "slang\|黑话" src/` 空）。三选
 
 ### 4.1 MCP 工具：42 → Aurabot 49 工具（同名者语义也不同）
 
-> 关键警告：SurfCore preset 提示词**逐条点名工具名**（`<PL>/presets/qq-chat-v2.patch.yml:22-25`，含 `mcp__snowluma__qq_send_message`、`qq_wait_for_messages`、`qq_mark_read`、`qq_close_conversation`、`qq_set_wake_config` 等），且要求「把【会话令牌】作为 token 参数传入」。换插件后**整套 17 条工具协议全部作废**，而且语义是**反的**：SurfCore 是「文本不发出、必须调工具」，Aurabot 是「正文就是发出的消息、工具只用于发到别的会话」。
+> 关键警告：DSBot preset 提示词**逐条点名工具名**（`<PL>/presets/qq-chat-v2.patch.yml:22-25`，含 `mcp__snowluma__qq_send_message`、`qq_wait_for_messages`、`qq_mark_read`、`qq_close_conversation`、`qq_set_wake_config` 等），且要求「把【会话令牌】作为 token 参数传入」。换插件后**整套 17 条工具协议全部作废**，而且语义是**反的**：DSBot 是「文本不发出、必须调工具」，Aurabot 是「正文就是发出的消息、工具只用于发到别的会话」。
 
-| SurfCore 工具（SC:226） | Aurabot 对应 | 判定 / 说明 |
+| DSBot 工具（SC:226） | Aurabot 对应 | 判定 / 说明 |
 |---|---|---|
 | `qq_status`、`qq_get_prompt`、`qq_social_state`、`qq_get_self_image` | 无 | 缺失（状态在面板/`/api/state`） |
 | `qq_list_groups`、`qq_get_group_members`、`qq_get_active_members` | 无工具 | 缺失（内部有 `get_group_member_list` 缓存，`src/chat/hub.js:139-143`，但对模型不可见） |
@@ -283,18 +283,18 @@ Aurabot 全仓无黑话/梗库（`grep -rl "slang\|黑话" src/` 空）。三选
 | `qq_mark_read`、`qq_close_conversation`、`qq_set_wake_config`、`qq_wait_for_messages` | 无 | **缺失（范式性）**：Aurabot 无已读水位/潜水/收尾/等待概念（AU:415-421） |
 | `qq_report_feedback` | 无 | 缺失 |
 | `qq_list_stickers` / `qq_collect_sticker` | `qq_list_stickers` / `qq_collect_sticker` | 部分（Aurabot 另有 `qq_add_sticker`/`qq_save_sticker`/`qq_import_qq_stickers`/`qq_edit_sticker`） |
-| `qq_get_sticker_image` / `qq_sticker_note` / `qq_set_sticker_remark` | 无（`qq_edit_sticker` 近似改名/标签） | 缺失（SurfCore 的 `setStickerRemark` 也默认关） |
+| `qq_get_sticker_image` / `qq_sticker_note` / `qq_set_sticker_remark` | 无（`qq_edit_sticker` 近似改名/标签） | 缺失（DSBot 的 `setStickerRemark` 也默认关） |
 | `qq_list_voices` | 无 | 缺失 |
 | `qq_memory_query` / `qq_memory_append` / `qq_memory_remove` / `qq_memory_clear` | `recall_memory` / `remember` | 部分（只能「记」不能「删/清」，删除在面板） |
 | `qq_slang_query` / `qq_slang_submit` | 无 | 缺失（§3.3） |
 | `snowluma_status`（host 1 个） | 无 | 缺失（`gateway=onebot` 不探 SnowLuma） |
 | `web_search` / `web_fetch`（web-search-safe 2 个） | **群里无**；主人私聊 = DSH `tool-web` | **缺失（群聊）**：social preset 不挂 tool-web（`cordis.patch.yml:119-143`），群友让她联网查东西会做不到 |
 
-> Aurabot 另有 SurfCore 没有的工具：`qq_group_admin`、`qq_draw_image`、`qq_send_qzone`、`qq_send_file`、`bili_*`(6)、`douyin_*`(7)、`heybox_*`(9)、`qq_get_profile`/`qq_set_*`/`qq_handle_friend_request`/`qq_whitelist`、`weather_now`（AU:389-393 汇总 + `src` 实测 49 个）。
+> Aurabot 另有 DSBot 没有的工具：`qq_group_admin`、`qq_draw_image`、`qq_send_qzone`、`qq_send_file`、`bili_*`(6)、`douyin_*`(7)、`heybox_*`(9)、`qq_get_profile`/`qq_set_*`/`qq_handle_friend_request`/`qq_whitelist`、`weather_now`（AU:389-393 汇总 + `src` 实测 49 个）。
 
 ### 4.2 插件 HTTP 路由：24+4 族+14 pet-api → `/aurabot/api/*` 74 条
 
-| SurfCore 路由族（SC:187-220） | Aurabot 对应 | 判定 |
+| DSBot 路由族（SC:187-220） | Aurabot 对应 | 判定 |
 |---|---|---|
 | `/overview` `/health` | `/state`、`/aurabot/api/state`（AU:358） | 等价异名 |
 | `/config`（三份配置读写、409 冲突） | `/save`（单份 config）+ 面板表单 | 部分（无版本戳/冲突检测） |
@@ -308,14 +308,14 @@ Aurabot 全仓无黑话/梗库（`grep -rl "slang\|黑话" src/` 空）。三选
 | `/voice/*`（代理桥接） | `/voice/{song-voices,test,install,asr-status,asr-prepare,asr-last,asr-test}` | 部分 |
 | `/pet/*` + `/pet-api/*`（14 条，`x-pet-token`） | `/panel/pet/*`（14 条）+ pet 模块 26 条（AU:359,387） | 部分（契约不同，桌宠本体要换） |
 | `/extensions` `/platforms` | `/modules`、`/modules/{reload,create,fork,prompt,open,simulate,tools,tool,panel}` | 等价异名 |
-| `/dsh-surfcore/ext/<id>/<path>` | `/aurabot/api/ext/<id>/<path>`（AU:372） | 等价异名 |
+| `/dsh-dsbot/ext/<id>/<path>` | `/aurabot/api/ext/<id>/<path>`（AU:372） | 等价异名 |
 | `/updates`（组件更新/回滚） | 无 | 缺失 |
 
-> 鉴权差异：SurfCore 显式调 `connection.requestRejection`（无 Cookie 实测 401，SC:185）；Aurabot 的路由 handler 内**未见鉴权代码**（`src/host.js:311-341`），是否受 DSH 外层鉴权保护 **未确认**（附录 A-2）。
+> 鉴权差异：DSBot 显式调 `connection.requestRejection`（无 Cookie 实测 401，SC:185）；Aurabot 的路由 handler 内**未见鉴权代码**（`src/host.js:311-341`），是否受 DSH 外层鉴权保护 **未确认**（附录 A-2）。
 
 ### 4.3 桥接控制台 138 个 API（重点 `/api/socialV2/*` 46 个）→ 无对外 HTTP
 
-| SurfCore（SC:232-254） | Aurabot 实现位置 | 对外可见性 |
+| DSBot（SC:232-254） | Aurabot 实现位置 | 对外可见性 |
 |---|---|---|
 | `/api/socialV2/*` 46 个（state/config/prompt/send-*/wake/mark-read/close/history-catchup/memory-*/slang-*/sticker-*/tool-log…） | `src/chat/hub.js`、`src/chat/reply.js`、`src/chat/group-policy.js`、`src/onebot/client.js` 内部函数 | **不暴露**：行为内化，无 REST 等价物 → 外部脚本/工具链断 |
 | `/api/status`、`/api/sessions`、`/api/restart`、`/api/preset/sim-prompt` | `/state`、`/sessions/reset`、`/save` | 部分 |
@@ -323,13 +323,13 @@ Aurabot 全仓无黑话/梗库（`grep -rl "slang\|黑话" src/` 空）。三选
 
 ### 4.4 CLI / 脚本 → 无 CLI
 
-- SurfCore：`tools/bili.mjs` 约 50 子命令（读类 30+、写类须 `--dry`/`--go`、排障 2 个）、`scripts/` 159 个（运维常用 9 个）、`<PL>/scripts/` 40 个测试脚本（SC:267-271）。
+- DSBot：`tools/bili.mjs` 约 50 子命令（读类 30+、写类须 `--dry`/`--go`、排障 2 个）、`scripts/` 159 个（运维常用 9 个）、`<PL>/scripts/` 40 个测试脚本（SC:267-271）。
 - Aurabot：**零 CLI**，全部经面板或 `/aurabot/api/*`。`extensions/tieba-reader` 是唯一带独立脚本的扩展（AU:346）。
 - 会断的地方：`bili.mjs` 批量评论/动态/查询、`setup-dsh.mjs`/`sync-dsh-port.mjs`/`scan-dsh-tool-names.mjs` 等 profile 维护脚本、`check-onebot-status.mjs`、`bili-memory-sync.mjs`。
 
 ### 4.5 preset：2 个 → 3 个，工具面重排
 
-| 维度 | SurfCore `qq-chat` / `qq-chat-v2`（SC:273-278） | Aurabot `aurabot-private` / `-private-long` / `-social`（AU:29-32） |
+| 维度 | DSBot `qq-chat` / `qq-chat-v2`（SC:273-278） | Aurabot `aurabot-private` / `-private-long` / `-social`（AU:29-32） |
 |---|---|---|
 | 系统提示词 | persona 前缀 + 17 条工具协议 + 场景/反 AI 味规则；`complete` 未设 | persona（`{{aurabot_persona}}`）+ `rulesText`（内联标记协议）+ **`complete: true`**（人格独占） |
 | 工具面 | `mcp__snowluma__*` 39 + web-search 2 + `tool-ask-user` + `tool-todo` + 守卫 | 模块工具（≤49）；private 另加 bash/pwsh/fs/fs-search/web；private-long 再加 `tool-jobs`+`tool-schedule`；**social 无任何本地工具、无 web** |
@@ -339,33 +339,33 @@ Aurabot 全仓无黑话/梗库（`grep -rl "slang\|黑话" src/` 空）。三选
 
 ### 4.6 `qq-mode` 设置命名空间 → 无对应
 
-SurfCore 用 loader entry `qq-mode` 的 Config 推导 settings 命名空间，字段 `mode∈{chat, closed-agent, reserved, reserved2, simulation}`（默认 `reserved2`）+ `ownerQQ`，桥接读写它（SC:263-265）。Aurabot 无 settings 命名空间：等价信息分散在 `ownerLevel`（权限档）、`allow.*`、`group.*`、`enabled/dryRun`。**外部任何读写该命名空间的脚本/文档全部失效。**
+DSBot 用 loader entry `qq-mode` 的 Config 推导 settings 命名空间，字段 `mode∈{chat, closed-agent, reserved, reserved2, simulation}`（默认 `reserved2`）+ `ownerQQ`，桥接读写它（SC:263-265）。Aurabot 无 settings 命名空间：等价信息分散在 `ownerLevel`（权限档）、`allow.*`、`group.*`、`enabled/dryRun`。**外部任何读写该命名空间的脚本/文档全部失效。**
 
 ### 4.7 模块 hooks / 扩展平台
 
-| SurfCore（SC:280-283） | Aurabot（AU:399-402,278） |
+| DSBot（SC:280-283） | Aurabot（AU:399-402,278） |
 |---|---|
 | `extensions/<id>/{manifest.json,index.js}`，默认 `enabled:false`，宿主 API = config/dataDir/paths/platforms/registerPlatform/记忆/桥接控制/B站工具链/事件总线/自定义路由 | `modules/<id>/index.mjs`，`export default {id,name,version,api,setup,settings,panel,tab,defaults}`；`api.*` 约 25 项；hooks：`message`/`poke`/`reply`/`group/decide`/`prompt`/`reply/items`/`send`/`model`/`persona`/`rules` 可改写，另有 9 个只读 |
 | `PlatformAdapter` 接口 + 内置 qq/bili + tieba planned | 无平台抽象，每平台一个模块 |
 | 现有 `sts2`/`bili-live` 均未启用 | 内置 18 模块 + `extensions/tieba-reader` |
-| 结论 | **API 完全不兼容**，SurfCore 扩展必须重写；因现有扩展都未启用 → 无实损 |
+| 结论 | **API 完全不兼容**，DSBot 扩展必须重写；因现有扩展都未启用 → 无实损 |
 
 ### 4.8 外部脚本/自动化会断的地方（逐条）
 
-1. 任何 `curl http://127.0.0.1:3102/dsh-surfcore/api/*`（带/不带 Cookie 都变 404）——设置页自动化、`ui-shot.mjs` 类巡检脚本。
+1. 任何 `curl http://127.0.0.1:3102/dsh-dsbot/api/*`（带/不带 Cookie 都变 404）——设置页自动化、`ui-shot.mjs` 类巡检脚本。
 2. 桥接控制台 `127.0.0.1:3100` 全部 `/api/*`（含 `x-console-token` 调用方）——**端口直接消失**。
 3. `pet-api` 契约（`<STATE>/pet/host.json` 的 `baseUrl`+`token`）——桌宠本体若存在必须换 Aurabot 桌宠客户端。
 4. `tools/bili.mjs` 全部子命令 + `scripts/{setup-dsh,sync-dsh-port,scan-dsh-tool-names,check-onebot-status,bili-memory-sync}.mjs`。
 5. 任何读写 `qq-mode` settings 命名空间的脚本。
 6. 黑话确认流（`/api/slang/{extract,research,batch-confirm}`）与 token 用量报表（`/api/tokens/*`）。
-7. systemd `surfcore-bridge.service` 的 `ExecStart`/日志路径监控（`logs-surfcore-bridge.log` 不再增长）。
+7. systemd `dsbot-bridge.service` 的 `ExecStart`/日志路径监控（`logs-dsbot-bridge.log` 不再增长）。
 8. 依赖 `mcp__snowluma__*` 工具名的 prompt/评测集/审计脚本。
 
 ---
 
 ## 5. 缺口清单与替代
 
-| # | 缺口（SurfCore 有 / Aurabot 无） | 等级 | Aurabot 近似替代 | 建议 |
+| # | 缺口（DSBot 有 / Aurabot 无） | 等级 | Aurabot 近似替代 | 建议 |
 |---|---|---|---|---|
 | 1 | Token 额度/峰谷计价/80-100% 闸门/日花费上限 ¥8（SC:165,99） | 体验下降 | 无；只能靠 `model.reasoningEffort`、`group.maxPerHour`、`merge.waitSec` 间接压 | **接受损失** + 在 DeepSeek 侧设预算告警（外部） |
 | 2 | 模型自主唤醒/潜水/已读水位/收尾/等待（4 工具 + wake/tokenGuard 配置） | **阻断（行为）** | 推送式：`group.*` 决定回不回、`[沉默]` 表示不回、`merge.*` 合并连发 | **必须让用户书面接受**这是行为模型变化 |
@@ -387,7 +387,7 @@ SurfCore 用 loader entry `qq-mode` 的 Config 推导 settings 命名空间，�
 | 18 | 身份对齐 / 自我身份锚点 / 身份泄露闸 | 无关（`links:[]`、B站未用） | 无（`redact` 只管密钥，不管 QQ 号） | **接受损失**；若将来做 B站 必须重做泄露闸 |
 | 19 | 主人特权审计 / token 账本 | 体验下降 | 无（只有 `logs/`） | **接受损失** |
 | 20 | 真人式分条：1~3s 间隔、≤500 字、每分钟 8/每小时 60 | 体验下降 | `splitLines`+`bubbleDelay`（约 9 字/秒模拟）；**上限 5 条、群里 3 条** | **接受**（上限更低，反而不易刷屏） |
-| 21 | 全局试运行（SurfCore 无；B站 写操作才有 `--dry/--go`） | 无关 | `dryRun=true` 是 Aurabot 的默认值（AU:141） | **反向增强**：迁移期直接用 dryRun 验收 |
+| 21 | 全局试运行（DSBot 无；B站 写操作才有 `--dry/--go`） | 无关 | `dryRun=true` 是 Aurabot 的默认值（AU:141） | **反向增强**：迁移期直接用 dryRun 验收 |
 | 22 | MCP 工具面 42 个 | **阻断（prompt 层）** | 49 个模块工具（§4.1） | **必须重做提示词/评测集**，不能沿用 |
 
 **永久丢失（Aurabot 侧无任何载体，迁移后不可恢复）**：
@@ -413,8 +413,8 @@ SurfCore 用 loader entry `qq-mode` 的 Config 推导 settings 命名空间，�
 
 | 期 | 范围 | 进入条件 | 验收 | 回滚点 |
 |---|---|---|---|---|
-| **第 0 步（前置，阻断项）** | 恢复 QQ 登录态 | VNC 6081 / WebUI 5099 扫码 + 同意 EULA/PRIVACY；`curl :3000/get_login_info` 返回 `retcode:0`（LV:23-26） | 网关 HTTP/WS 都可连；`surfcore-bridge` 日志恢复「SnowLuma 已连接」 | —（不涉及数据变更） |
-| **P0** | QQ 核心对话：网关 + 人格 + 白名单 + 权限 + 试运行 | 第 0 步完成；已 tar 归档 `$DSH_HOME/surfcore` 与 `<SC>/state`；已确认「迁移窗口内停桥接」的责任人 | ① `dryRun=true` 下私聊/群聊各 20 条消息，面板日志显示「要发的内容」正确；② 关 dryRun 后与主人私聊 10 轮、群里被 @ 3 次，回复正常且分条像人；③ 白名单外的人发消息无响应 | `systemctl stop surfcore-dsh` → 从 profile 移除 aurabot bundle → 恢复 surfcore → `systemctl start surfcore-bridge`（见 §7 顺序） |
+| **第 0 步（前置，阻断项）** | 恢复 QQ 登录态 | VNC 6081 / WebUI 5099 扫码 + 同意 EULA/PRIVACY；`curl :3000/get_login_info` 返回 `retcode:0`（LV:23-26） | 网关 HTTP/WS 都可连；`dsbot-bridge` 日志恢复「SnowLuma 已连接」 | —（不涉及数据变更） |
+| **P0** | QQ 核心对话：网关 + 人格 + 白名单 + 权限 + 试运行 | 第 0 步完成；已 tar 归档 `$DSH_HOME/dsbot` 与 `<SC>/state`；已确认「迁移窗口内停桥接」的责任人 | ① `dryRun=true` 下私聊/群聊各 20 条消息，面板日志显示「要发的内容」正确；② 关 dryRun 后与主人私聊 10 轮、群里被 @ 3 次，回复正常且分条像人；③ 白名单外的人发消息无响应 | `systemctl stop dsbot-dsh` → 从 profile 移除 aurabot bundle → 恢复 dsbot → `systemctl start dsbot-bridge`（见 §7 顺序） |
 | **P1** | 记忆导入 + 黑话/身份等语感资产 | P0 稳定运行 ≥3 天无异常；记忆转换脚本产出通过 `JSON.parse` 自检 | ① 面板记忆条数 = 映射条数；② 抽 10 个话题问「你还记得…」，召回正确；③ 主人「交作业」提醒类记忆可被提起（§3.4）；④ 人格卡含压缩后的黑话段落 | 恢复 P0 备份的 `memories.json` 为空 + 换回旧人格卡 |
 | **P2** | B站 等当前未用的能力（含抖音/小黑盒可选） | 用户明确要继续用 B站；已完成重新扫码登录 | `bili.state` 显示已登录；跑一轮 `bili.autoBrowse` 有正确记录 | 关 `bili.enabled=false`（不影响 QQ 链路） |
 | **P3** | 语音 / 桌宠 / 空间 / 抖音等可选 | 装 `ffmpeg`（语音条编码）、`python3-venv`（edge-tts）；抖音另需 X/Xvfb + Chromium（LV:64-70） | 语音试听通过、发一条语音条收到；空间日记写一条可见 | 对应模块开关置 false |
@@ -428,13 +428,13 @@ SurfCore 用 loader entry `qq-mode` 的 Config 推导 settings 命名空间，�
 | # | 冲突 | 事实 | 必须做的事 |
 |---|---|---|---|
 | 1 | **同一 QQ 号只能一个 OneBot 消费者** | SnowLuma WS 允许多客户端；bridge.js 与 Aurabot 同时连 → 双收/双回（AU:327-328） | 先停 bridge **再**开 Aurabot 总开关；**顺序不可颠倒** |
-| 2 | **`surfcore-bridge.service` 会自己回来** | `Restart=always`（`/etc/systemd/system/surfcore-bridge.service`）；且 SurfCore 插件每 120s 有 `maybeAutoStartBridge()`（SC:59）；但当前 DSH 单元带 `SURFCORE_SKIP_AUTOSTART=1`（`/etc/systemd/system/surfcore-dsh.service`） | 必须 `systemctl disable --now surfcore-bridge.service` **并**把 `surfcore` 从 `dsh.profile.bundles` 移除（AU:434），只 kill 进程会复发 |
-| 3 | **DSH 重启会中断当前 agent 会话** | 本会话就跑在 `surfcore-dsh.service`(pid 990) 里（LV:16） | 安装/移除插件都要重启 DSH（AU:427）→ 该操作必须由**外部**（另开终端/systemd）执行，并提前告知用户本会话会断 |
-| 4 | **插件并存冲突**（preset 名/设置命名空间/端口/数据目录） | 两者都是 profile bundle，并存 = 双插件运行；`qq-mode` 命名空间与 Aurabot 无冲突但旧 preset 会留在列表里；端口 3100 会消失（Aurabot 无自有端口） | 迁移必须「先移除 surfcore，再装 aurabot」；数据目录互不干扰（`$DSH_HOME/surfcore` vs `$DSH_HOME/plugins-data/aurabot`），但**旧插件的数据不要就地改** |
+| 2 | **`dsbot-bridge.service` 会自己回来** | `Restart=always`（`/etc/systemd/system/dsbot-bridge.service`）；且 DSBot 插件每 120s 有 `maybeAutoStartBridge()`（SC:59）；但当前 DSH 单元带 `DSBOT_SKIP_AUTOSTART=1`（`/etc/systemd/system/dsbot-dsh.service`） | 必须 `systemctl disable --now dsbot-bridge.service` **并**把 `dsbot` 从 `dsh.profile.bundles` 移除（AU:434），只 kill 进程会复发 |
+| 3 | **DSH 重启会中断当前 agent 会话** | 本会话就跑在 `dsbot-dsh.service`(pid 990) 里（LV:16） | 安装/移除插件都要重启 DSH（AU:427）→ 该操作必须由**外部**（另开终端/systemd）执行，并提前告知用户本会话会断 |
+| 4 | **插件并存冲突**（preset 名/设置命名空间/端口/数据目录） | 两者都是 profile bundle，并存 = 双插件运行；`qq-mode` 命名空间与 Aurabot 无冲突但旧 preset 会留在列表里；端口 3100 会消失（Aurabot 无自有端口） | 迁移必须「先移除 dsbot，再装 aurabot」；数据目录互不干扰（`$DSH_HOME/dsbot` vs `$DSH_HOME/plugins-data/aurabot`），但**旧插件的数据不要就地改** |
 | 5 | **内存 3 GB 极限** | DSH 已占 1.8~2.0 GB，swap 已用 ~98 MB（LV:15,69） | 禁止两套 DSH 并行；验证期也只保留一套（必要时临时停 bridge 腾内存） |
-| 6 | **SnowLuma 容器与登录态归属** | SnowLuma 在 Docker（3000/3001/5099/6081），登录态在容器内；SurfCore 负责 token 自愈回写配置，Aurabot 不做（§5-10） | SnowLuma 启停归 Docker（`docker restart snowluma`），**不要让 Aurabot 用 `gateway=snowluma`**（Linux 会尝试 Windows 路径，AU:321-323）；换 token 后手工同步两处 token |
-| 7 | **`~/.dsh` 那只 DSH（pid 972，端口 3080）与迁移无关** | 该 home 下无 surfcore 插件/状态（SC:353, LV 侧同） | **不要误停/误改**；所有操作限定 `DSH_HOME=/home/ubuntu/dsh-agentchat/dsh-0.2-home` |
-| 8 | 试运行开关方向相反 | SurfCore 没有全局 dryRun；Aurabot 默认 `enabled=false`+`dryRun=true`（AU:426） | 忘记打开 `enabled` 会表现为「插件装了但完全不回消息」，不要误判为故障 |
+| 6 | **SnowLuma 容器与登录态归属** | SnowLuma 在 Docker（3000/3001/5099/6081），登录态在容器内；DSBot 负责 token 自愈回写配置，Aurabot 不做（§5-10） | SnowLuma 启停归 Docker（`docker restart snowluma`），**不要让 Aurabot 用 `gateway=snowluma`**（Linux 会尝试 Windows 路径，AU:321-323）；换 token 后手工同步两处 token |
+| 7 | **`~/.dsh` 那只 DSH（pid 972，端口 3080）与迁移无关** | 该 home 下无 dsbot 插件/状态（SC:353, LV 侧同） | **不要误停/误改**；所有操作限定 `DSH_HOME=/home/ubuntu/dsh-agentchat/dsh-0.2-home` |
+| 8 | 试运行开关方向相反 | DSBot 没有全局 dryRun；Aurabot 默认 `enabled=false`+`dryRun=true`（AU:426） | 忘记打开 `enabled` 会表现为「插件装了但完全不回消息」，不要误判为故障 |
 
 ## 附录 A：未确认项与确认方法
 
@@ -442,7 +442,7 @@ SurfCore 用 loader entry `qq-mode` 的 Config 推导 settings 命名空间，�
 |---|---|---|
 | A-1 | SnowLuma WS `role:"Universal"` 是否接受 Aurabot 的 `?access_token=` 查询参数鉴权（AU:445 U4） | 登录态恢复后，用 node 脚本连 `ws://127.0.0.1:3001/?access_token=***` 发 `get_login_info`，看是否 `retcode:0` |
 | A-2 | `/aurabot/api/*` 是否受 DSH 鉴权保护（handler 内未见校验，`src/host.js:311-341`） | 装好后 `curl -i http://127.0.0.1:<port>/aurabot/api/state`（不带 Cookie），看是否 401 |
-| A-3 | SurfCore 群成员 QQ 号与 `speaker` 昵称的对应关系（记忆条目只有昵称） | 读 `<SC>/state/social-v2.json` 的 `recentMessages[].sender`，或 `qq_get_group_members` 历史导出，与 `memory-card-full.jsonl` 的 `speaker` 对齐后补 `about` |
+| A-3 | DSBot 群成员 QQ 号与 `speaker` 昵称的对应关系（记忆条目只有昵称） | 读 `<SC>/state/social-v2.json` 的 `recentMessages[].sender`，或 `qq_get_group_members` 历史导出，与 `memory-card-full.jsonl` 的 `speaker` 对齐后补 `about` |
 | A-4 | `personas/da-fei-yu.md` 换 id 后历史会话是否仍可续（旧会话被绑在旧 preset 上） | 切换后看侧栏「Aurabot · QQ」是否新建会话；旧会话成为普通 DSH 会话（预期行为） |
 | A-5 | 面板「导入旧档案」在 web 版是否完整可见（AU:449 U8） | 装好后逐页点一遍「心情与记忆 → 导入旧档案」 |
 | A-6 | `memory-card.json` 的 303 条里，哪些属于「必须保留」（SC:370 #7） | 人工抽样 `memory-card.md`（28 KB / 323 行），与用户确认可丢弃范围（本文按「主人 164 + 群 57 保留、self 81 丢弃」给默认建议） |

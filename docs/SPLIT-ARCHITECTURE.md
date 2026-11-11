@@ -1,6 +1,6 @@
-# SurfCore 拆分架构（8 个独立插件）
+# DSBot 拆分架构（8 个独立插件）
 
-> 目标：把合体插件 `surfcore`（宿主 `lib/index.js` 2958 行 + 设置页 `lib/client.js` 5409 行 +
+> 目标：把合体插件（老仓库）（宿主 `lib/index.js` 2958 行 + 设置页 `lib/client.js` 5409 行 +
 > ~20 个宿主模块）拆成**一个个单独的插件**。拆分期间**旧插件一行不改**；新包在
 > `插件/` 下独立开发与测试，全部完善后再整体迁移（见 [MIGRATION.md](MIGRATION.md)）。
 >
@@ -11,14 +11,14 @@
 ## 0. 四条硬约束（所有包都必须满足）
 
 1. **自包含**：包内代码只能 `import` 包内文件、Node 内置模块、以及自己 `package.json` 声明的 npm 依赖。
-   **禁止**出现 `../../../src/*.js`、`surfcore` 之类的包外引用。由
+   **禁止**出现 `../../../src/*.js`、`dsbot` 之类的包外引用。由
    `tools/test-harness.mjs` 的 `checkPackage()` 自动检查，违反即测试失败。
    - 需要的旧代码用 `tools/vendor.mjs` **原样复制**到 `lib/vendor/`（保持仓库相对结构，
      所以一行 import 都不用改）。
-2. **不改旧插件**：`/home/ubuntu/dsh-agentchat/surfcore/**` 只读。所有产出写在本工作区 `插件/`。
+2. **不改旧插件**：`‹老仓库›/**` 只读。所有产出写在本工作区 `插件/`。
 3. **可离线验证**：每个包自带 `scripts/test-smoke.mjs`，用 mock ctx 装配宿主半边、
    用假 `window.__ModuleLoader__` 加载浏览器半边，不启动 DSH、不连 QQ、不写真实 `~/.dsh`。
-4. **数据兼容**：继续读写原有配置文件与状态目录（QQ 的 `config.json`、`~/.dsh/surfcore/*`、
+4. **数据兼容**：继续读写原有配置文件与状态目录（QQ 的 `config.json`、`~/.dsh/dsbot/*`、
    `bili.config.json`、记忆目录、`characters/`、`pet/` 等），保证迁移后旧数据直接可用、
    桥接进程与 B站 工具链不用改。
 
@@ -28,14 +28,14 @@
 
 | # | 包 | 设置栏目 | API 前缀 | 负责 | 不负责 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `surfcore-core` | SurfCore · 核心 | `/dsh-surfcore-core/api` | 配置模型与读改写、管理员身份投影、概览/诊断、全部参数、扩展宿主、平台注册表、组件更新、备份、日志、原生浏览 | QQ/B站 业务参数与运行、记忆内容、角色 |
-| 2 | `surfcore-qq` | SurfCore · QQ | `/dsh-surfcore-qq/api` | QQ 桥接进程启停/自愈/日志/状态、`qq-mode` settings 命名空间、模式切换、白名单/黑名单、SnowLuma 检测与启动、QQ 鱼群保护状态 | B站 调度、分享（归 bili）、记忆/角色/额度 |
-| 3 | `surfcore-bili` | SurfCore · B站 | `/dsh-surfcore-bili/api` | B站 生物钟（scheduler 五条 tick）、bili 配置与 cookie/扫码登录、养鱼参数、观看历史、口味扫描、定时分享/四类动态、B站 鱼群守则 | QQ 桥接本身、记忆维护 |
-| 4 | `surfcore-memory` | SurfCore · 记忆 | `/dsh-surfcore-memory/api` | 衰减记忆卡（维护/压缩/备份/注入块渲染）、双向脱敏记忆（QQ⇄B站）、身份对齐、隐私闸门、主人特权审计 | 记忆内容产生者（桥接/调度器） |
-| 5 | `surfcore-character` | SurfCore · 角色 | `/dsh-surfcore-character/api` | 角色包（创建/切换/存档/回档/删除）、人格卡解析与编辑、角色迁移与指针、自我认同 | 记忆卡内容 |
-| 6 | `surfcore-token` | SurfCore · 额度 | `/dsh-surfcore-token/api` | 每日 token 额度与用量采集（四口径）、峰谷计价、80%/100% 闸门、启动回填、额度文件 | 其它插件的用量明细（它们各自追加） |
-| 7 | `surfcore-pet` | SurfCore · 桌宠 | `/dsh-surfcore-pet/api`（桌宠 API 仍为 `/dsh-surfcore/pet-api`） | 桌宠安装/更新/启停/卸载、桌宠对话、目的机制（主动搭话）桌宠载体、`pet/host.json` 心跳 | QQ 载体的目的发送（桥接自己做） |
-| 8 | `surfcore-voice` | SurfCore · 语音 | `/dsh-surfcore-voice/api` | 语音包安装/启停/健康检查、TTS 路由（本地/云端/Piper）、角色音色、云端凭据 | 语音消息的发送（桥接/桌宠各自做） |
+| 1 | `dsbot-core` | DSBot · 核心 | `/dsh-dsbot-core/api` | 配置模型与读改写、管理员身份投影、概览/诊断、全部参数、扩展宿主、平台注册表、组件更新、备份、日志、原生浏览 | QQ/B站 业务参数与运行、记忆内容、角色 |
+| 2 | `dsbot-qq` | DSBot · QQ | `/dsh-dsbot-qq/api` | QQ 桥接进程启停/自愈/日志/状态、`qq-mode` settings 命名空间、模式切换、白名单/黑名单、SnowLuma 检测与启动、QQ 鱼群保护状态 | B站 调度、分享（归 bili）、记忆/角色/额度 |
+| 3 | `dsbot-bili` | DSBot · B站 | `/dsh-dsbot-bili/api` | B站 生物钟（scheduler 五条 tick）、bili 配置与 cookie/扫码登录、养鱼参数、观看历史、口味扫描、定时分享/四类动态、B站 鱼群守则 | QQ 桥接本身、记忆维护 |
+| 4 | `dsbot-memory` | DSBot · 记忆 | `/dsh-dsbot-memory/api` | 衰减记忆卡（维护/压缩/备份/注入块渲染）、双向脱敏记忆（QQ⇄B站）、身份对齐、隐私闸门、主人特权审计 | 记忆内容产生者（桥接/调度器） |
+| 5 | `dsbot-character` | DSBot · 角色 | `/dsh-dsbot-character/api` | 角色包（创建/切换/存档/回档/删除）、人格卡解析与编辑、角色迁移与指针、自我认同 | 记忆卡内容 |
+| 6 | `dsbot-token` | DSBot · 额度 | `/dsh-dsbot-token/api` | 每日 token 额度与用量采集（四口径）、峰谷计价、80%/100% 闸门、启动回填、额度文件 | 其它插件的用量明细（它们各自追加） |
+| 7 | `dsbot-pet` | DSBot · 桌宠 | `/dsh-dsbot-pet/api`（桌宠 API 仍为 `/dsh-dsbot/pet-api`） | 桌宠安装/更新/启停/卸载、桌宠对话、目的机制（主动搭话）桌宠载体、`pet/host.json` 心跳 | QQ 载体的目的发送（桥接自己做） |
+| 8 | `dsbot-voice` | DSBot · 语音 | `/dsh-dsbot-voice/api` | 语音包安装/启停/健康检查、TTS 路由（本地/云端/Piper）、角色音色、云端凭据 | 语音消息的发送（桥接/桌宠各自做） |
 
 安装后，DSH 设置里会出现 8 个独立栏目（`settings.section` 的 id = 包名）。
 它们在 UI 上并列，互不依赖；任何单个包都可以单独安装/停用（停用只影响它自己的栏目与后台任务）。
@@ -47,7 +47,7 @@
 每个包结构一致（由 `tools/new-plugin.mjs` 生成骨架）：
 
 ```
-surfcore-<part>/
+dsbot-<part>/
 ├── package.json          # name=目录名；exports ./client；dsh.bundle.patch；dsh.client.platform=web
 ├── cordis.patch.yml      # insert 一行：id=<包名> name=<包名> config: {}
 ├── icon.svg              # 插件列表图标（每个包不同色）
@@ -66,7 +66,7 @@ surfcore-<part>/
 宿主入口约定：
 
 ```js
-export const name = 'surfcore-<part>';
+export const name = 'dsbot-<part>';
 export const inject = ['webServer', 'connection'];   // 需要什么写什么
 export function apply(ctx) { /* 建服务 → 注册路由 → 挂定时器 → ctx.effect(清理) */ }
 export default { name, inject, apply };
@@ -110,7 +110,7 @@ WindowsEditor/flatten/ErrorModal` 等）从 `templates/client-kit.js` 内联进�
 
 ```js
 import { updateJsonFile } from './lib/config-lock.js';
-import { QQ_CONFIG } from './vendor/plugins/surfcore/lib/paths.js';
+import { QQ_CONFIG } from './vendor/plugins/‹合体插件›/lib/paths.js';
 
 updateJsonFile(QQ_CONFIG, (cfg) => {
   const social = cfg.socialV2 ?? (cfg.socialV2 = {});
@@ -125,17 +125,17 @@ updateJsonFile(QQ_CONFIG, (cfg) => {
 
 | 文件 / 目录 | 唯一写者 | 说明 |
 | --- | --- | --- |
-| `<surfcore>/config.json` | `surfcore-qq` | QQ 桥接配置。**例外**：`socialV2.voice*` 由 `surfcore-voice` 写；`biliBridge*` 由 `surfcore-bili` 写（都要走锁） |
-| `~/.dsh/surfcore/config.json`（统一配置） | `surfcore-core` | **例外**：`bridge` 由 qq 写；`persona` 由 character 写；`memory` / `alignment` / `memoryCard` 由 memory 写；其余键（`admin`/`extensions`/`platforms`/`updates`/`ui`/`qqbotRoot`）由 core 写。全部走锁 |
-| `~/.dsh/surfcore/bili.config.json` | `surfcore-bili` | B站 全部参数与凭据引用 |
-| `~/.dsh/surfcore/memory/**` | `surfcore-memory` | 记忆卡、注入块、双向记忆 md、inbox 的**维护者**；inbox 允许多写者 append（追加单行，天然安全） |
-| `~/.dsh/surfcore/characters/**`、`persona` 路径 | `surfcore-character` | 角色包 + 当前角色指针 |
-| `~/.dsh/surfcore/token-*.json` | `surfcore-token` | 额度与用量快照 |
-| `~/.dsh/surfcore/token-usage-pet.jsonl` | `surfcore-pet` | 桌宠对话用量（append-only；由 token 包读入「其他」口径） |
-| `~/.dsh/surfcore/pet/**` | `surfcore-pet` | 桌宠状态、`host.json`、`host-token`、对话记录 |
-| `<surfcore>/state/*` | 桥接进程（外部） | 插件只读（对话历史、token 用量原始记录、白名单快照） |
-| `~/.dsh/surfcore/plugin.log` | 全部 | 只 append（各包前缀 `[包名]`） |
-| `~/.dsh/surfcore/backups/` | 全部 | 文件名含来源标签，天然不冲突 |
+| `<dsbot>/config.json` | `dsbot-qq` | QQ 桥接配置。**例外**：`socialV2.voice*` 由 `dsbot-voice` 写；`biliBridge*` 由 `dsbot-bili` 写（都要走锁） |
+| `~/.dsh/dsbot/config.json`（统一配置） | `dsbot-core` | **例外**：`bridge` 由 qq 写；`persona` 由 character 写；`memory` / `alignment` / `memoryCard` 由 memory 写；其余键（`admin`/`extensions`/`platforms`/`updates`/`ui`/`qqbotRoot`）由 core 写。全部走锁 |
+| `~/.dsh/dsbot/bili.config.json` | `dsbot-bili` | B站 全部参数与凭据引用 |
+| `~/.dsh/dsbot/memory/**` | `dsbot-memory` | 记忆卡、注入块、双向记忆 md、inbox 的**维护者**；inbox 允许多写者 append（追加单行，天然安全） |
+| `~/.dsh/dsbot/characters/**`、`persona` 路径 | `dsbot-character` | 角色包 + 当前角色指针 |
+| `~/.dsh/dsbot/token-*.json` | `dsbot-token` | 额度与用量快照 |
+| `~/.dsh/dsbot/token-usage-pet.jsonl` | `dsbot-pet` | 桌宠对话用量（append-only；由 token 包读入「其他」口径） |
+| `~/.dsh/dsbot/pet/**` | `dsbot-pet` | 桌宠状态、`host.json`、`host-token`、对话记录 |
+| `<dsbot>/state/*` | 桥接进程（外部） | 插件只读（对话历史、token 用量原始记录、白名单快照） |
+| `~/.dsh/dsbot/plugin.log` | 全部 | 只 append（各包前缀 `[包名]`） |
+| `~/.dsh/dsbot/backups/` | 全部 | 文件名含来源标签，天然不冲突 |
 
 ### 4.2 只读/只写契约（跨包解耦点）
 
@@ -147,10 +147,10 @@ updateJsonFile(QQ_CONFIG, (cfg) => {
 | `token-usage-pet.jsonl` | pet append → token 汇总 |
 | `pet/host.json`、`pet/host-token` | pet → 桌宠 Electron |
 | `characters/current-role.json` | character → qq/bili/memory/pet（读，决定人格卡与记忆路径） |
-| `<surfcore>/state/mode.json` | 桥接写 / qq 读（模式显示） |
-| `<surfcore>/state/alignment-brief.md` | memory → 桥接 / bili 调度器 |
-| `<surfcore>/state/needs-bridge-restart.json` | character 写（切换角色后）→ qq 包自愈 tick 读到就重启桥接并删除标记 |
-| `<surfcore>/state/plugin-intent.json` | 任意包写「希望别的包做一件事」的通用意图文件（role/action/reason/at），消费方责任方删除；目前只有 role-switch 用到 |
+| `<dsbot>/state/mode.json` | 桥接写 / qq 读（模式显示） |
+| `<dsbot>/state/alignment-brief.md` | memory → 桥接 / bili 调度器 |
+| `<dsbot>/state/needs-bridge-restart.json` | character 写（切换角色后）→ qq 包自愈 tick 读到就重启桥接并删除标记 |
+| `<dsbot>/state/plugin-intent.json` | 任意包写「希望别的包做一件事」的通用意图文件（role/action/reason/at），消费方责任方删除；目前只有 role-switch 用到 |
 
 **规则：跨包只通过这些文件与只读 HTTP 交互，不做进程内 service 依赖**（保证任意子集可单独安装）。
 
@@ -205,7 +205,7 @@ updateJsonFile(QQ_CONFIG, (cfg) => {
 3. 宿主半边：`status` + 本包主要 GET/POST 接口都有断言；`apply()` 能在 mock ctx 下装配与卸载。
 4. 浏览器半边：ModuleLoader 能加载，注册 1 个 `settings.section`，id = 包名。
 5. `README.md` 写清负责/不负责、数据文件、测试方式。
-6. 不改动 `surfcore/` 任何文件（`git status` 里不应出现旧仓库路径）。
+6. 不改动 `dsbot/` 任何文件（`git status` 里不应出现旧仓库路径）。
 
 ---
 
@@ -213,10 +213,10 @@ updateJsonFile(QQ_CONFIG, (cfg) => {
 
 - **UI 无法离线看效果**：只能验证「加载成功 + 注册成功 + 组件能构造」，
   真实像素/交互要在 `docs/MIGRATION.md` 的安装验证阶段看。这是「先不装」决策的代价。
-- **`surfcore/presets/*.patch.yml`（两个 QQ agent preset）与 `qq-tool-restrict.mjs` 仍留在旧包**：
+- **`dsbot/presets/*.patch.yml`（两个 QQ agent preset）与 `qq-tool-restrict.mjs` 仍留在旧包**：
   它们不是「部件」，迁移时单独处理（见 MIGRATION.md §4）。
 - **桥接进程与 B站 工具链不拆**：`src/bridge.js`（15k 行）与 `tools/bili.mjs` 是独立运行的程序，
   不是 DSH 插件；拆分包只负责「配置它们、启停它们、展示它们」。B站 包把 `tools/` 一起 vendor 进包内，
   使新包不依赖旧仓库目录。
-- **桌宠 API 前缀保持 `/dsh-surfcore/pet-api`**：桌宠 Electron 进程从 `pet/host.json` 读取地址，
+- **桌宠 API 前缀保持 `/dsh-dsbot/pet-api`**：桌宠 Electron 进程从 `pet/host.json` 读取地址，
   为兼容不改名。迁移时旧插件必须先停用，避免同一前缀被两个插件注册。
